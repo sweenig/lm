@@ -11,21 +11,31 @@ Requires Python3 and the logicmonitor_sdk library, which isn't installed on the 
 ## Usage
 
 The following arguments are required: --company, --access_id, --access_key
+
 optional arguments:
+
   -h, --help            show this help message and exit
+
   -d DEBUGLEVEL, --debuglevel DEBUGLEVEL
+
                         Debugging verbosity: 0-∞, higher number means more
                         verbose output. N A value of -1 will produce output
                         suitable for DS output.
+
   -s, --cascadeSDT      Add a flag to each collector group that disables
                         alerting for all devices in that group if the
                         collector is in SDT
+
   --company COMPANY
+
   --access_id ACCESS_ID
+
   --access_key ACCESS_KEY
 
 ## Contributing
+
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
+
 [MIT](https://choosealicense.com/licenses/mit/)
