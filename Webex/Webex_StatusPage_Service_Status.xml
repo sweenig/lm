@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1677514894</version>
+        <name>Webex_StatusPage_Service_Status</name>
+        <displayedas>Service Status</displayedas>
+        <description>Monitor status of Webex services, sub-components and associated statuses. Pulls from https://service-status.webex.com/customer/dashServices/891, which appears to the source for https://status.webex.com/service/status?lang=en_US.</description>
+        <collector>batchscript</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <useWildValueAsUniqueIdentifier>true</useWildValueAsUniqueIdentifier>
+        <schedule>300</schedule>
+        <appliesTo>webex.serviceId</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;embeded&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;embeded&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>/*******************************************************************************
+ * © 2023 Aqueduct Technologies Inc. All rights reserved.
+ ******************************************************************************/
+
+import groovy.json.JsonSlurper
+serviceId = hostProps.get(&#34;webex.serviceId&#34;)
+def STATUS_MAP = [&#34;operational&#34;: 1, &#34;degraded_performance&#34;: 2, &#34;partial_outage&#34;: 3, &#34;major_outage&#34;: 4]
+url = &#34;https://service-status.webex.com/customer/dashServices/${serviceId}?_=${new Date().getTime()}&#34;
+def status
+def getRequestConn = url.toURL().openConnection()
+if (getRequestConn.responseCode == 200) {
+    status = new JsonSlurper().parseText(getRequestConn.content.text)
+} else {println &#34;Failed to GET ${url}\nStatus code: ${getRequestConn.responseCode}&#34;;return 1}
+
+status.components.each{group -&#62;
+    group.components.each{component -&#62;
+        println(&#34;${component.componentId}##${component.componentName}######parent=${group.componentName}&#34;)
+    }
+}
+
+return 0</wildcardgroovyscript>
+        <wildcardschedule>60</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>false</wildcarddeleteinactive>
+        <agdmethod>ilp</agdmethod>
+        <agdparams>auto.parent</agdparams>
+        <group></group>
+        <tags>statuspage.io,chat,zoom,networking,video</tags>
+        <technology>Written by Stuart Weenig for Aqueduct Technologies</technology>
+        <adlist><![CDATA[{"agdmethod":"ilp","method":"ad_script","agdparams":"auto.parent","id":0,"filters":[],"params":{"type":"embeded","groovyscript":"/*******************************************************************************\r\n * © 2023 Aqueduct Technologies Inc. All rights reserved.\r\n ******************************************************************************/\r\n\r\nimport groovy.json.JsonSlurper\r\nserviceId = hostProps.get(\"webex.serviceId\")\r\ndef STATUS_MAP = [\"operational\": 1, \"degraded_performance\": 2, \"partial_outage\": 3, \"major_outage\": 4]\r\nurl = \"https://service-status.webex.com/customer/dashServices/${serviceId}?_=${new Date().getTime()}\"\r\ndef status\r\ndef getRequestConn = url.toURL().openConnection()\r\nif (getRequestConn.responseCode == 200) {\r\n    status = new JsonSlurper().parseText(getRequestConn.content.text)\r\n} else {println \"Failed to GET ${url}\\nStatus code: ${getRequestConn.responseCode}\";return 1}\r\n\r\nstatus.components.each{group ->\r\n    group.components.each{component ->\r\n        println(\"${component.componentId}##${component.componentName}######parent=${group.componentName}\")\r\n    }\r\n}\r\n\r\nreturn 0"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>embed</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>/*******************************************************************************
+ * © 2023 Aqueduct Technologies Inc. All rights reserved.
+ ******************************************************************************/
+import groovy.json.JsonSlurper
+serviceId = hostProps.get(&#34;webex.serviceId&#34;)
+def STATUS_MAP = [&#34;operational&#34;: 1, &#34;degraded_performance&#34;: 2, &#34;partial_outage&#34;: 3, &#34;major_outage&#34;: 4]
+url = &#34;https://service-status.webex.com/customer/dashServices/${serviceId}?_=${new Date().getTime()}&#34;
+def status
+def getRequestConn = url.toURL().openConnection()
+if (getRequestConn.responseCode == 200) {
+    status = new JsonSlurper().parseText(getRequestConn.content.text)
+} else {println &#34;Failed to GET ${url}\nStatus code: ${getRequestConn.responseCode}&#34;;return 1}
+
+status.components.each{group -&#62;
+    group.components.each{component -&#62;
+        println(&#34;${component.componentId}.status: ${STATUS_MAP[component.status]}&#34;)
+    }
+}
+
+return 0</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>Status</name>
+            <originId>cTRkX8sbQtuuKAx8Hh9w_Q</originId>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.status</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr>&#62;= 2</alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody>StatusPageIO service ##INSTANCE## on ##HOST## is not operating optimally and is reporting a status code of ##VALUE##, placing the host into ##LEVEL## state.
+
+Status Codes:
+1 = operational
+2 = degraded performance 
+3 = partial outage
+4 = major outage
+
+This started at ##START##, -- or ##DURATION## ago.</alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description>Status Code
+
+1=operational,
+2=degraded performance,
+3=partial outage,
+4=major outage</description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>2</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        <graph>
+            <name>##INSTANCE## - Status</name>
+            <title>##INSTANCE## - Status</title>
+            <originId></originId>            <verticallabel>status code</verticallabel>
+            <rigid>false</rigid>
+            <maxvalue>5.0</maxvalue>
+            <minvalue>0.0</minvalue>
+            <displayprio>1</displayprio>
+            <timescale>1day</timescale>
+            <base1024>false</base1024>
+            <graphdatapoints>
+        <graphdatapoint>
+            <name>Status</name>
+            <datapointname>Status</datapointname>
+            <originId></originId>
+            <cf>1</cf>
+        </graphdatapoint>
+            </graphdatapoints>
+            <graphvirtualdatapoints>
+        <graphvirtualdatapoint>
+            <name>degraded</name>
+            <rpn>if(eq(Status,2),Status,unkn())</rpn>
+            <originId></originId>
+        </graphvirtualdatapoint>
+        <graphvirtualdatapoint>
+            <name>major</name>
+            <rpn>if(eq(Status,4),Status,unkn())</rpn>
+            <originId></originId>
+        </graphvirtualdatapoint>
+        <graphvirtualdatapoint>
+            <name>operational</name>
+            <rpn>if(eq(Status,1),Status,unkn())</rpn>
+            <originId></originId>
+        </graphvirtualdatapoint>
+        <graphvirtualdatapoint>
+            <name>partial</name>
+            <rpn>if(eq(Status,3),Status,unkn())</rpn>
+            <originId></originId>
+        </graphvirtualdatapoint>
+            </graphvirtualdatapoints>
+            <graphdatas>
+            <graphdata>
+                <type>3</type>
+                <legend>Major Outage</legend>
+                <color>red</color>
+                <datapointname>major</datapointname>
+                <isvirtualdatapoint>true</isvirtualdatapoint>
+            </graphdata>
+            <graphdata>
+                <type>3</type>
+                <legend>Partial Outage</legend>
+                <color>orange</color>
+                <datapointname>partial</datapointname>
+                <isvirtualdatapoint>true</isvirtualdatapoint>
+            </graphdata>
+            <graphdata>
+                <type>3</type>
+                <legend>Degraded Performance</legend>
+                <color>yellow</color>
+                <datapointname>degraded</datapointname>
+                <isvirtualdatapoint>true</isvirtualdatapoint>
+            </graphdata>
+            <graphdata>
+                <type>3</type>
+                <legend>Operational</legend>
+                <color>green</color>
+                <datapointname>operational</datapointname>
+                <isvirtualdatapoint>true</isvirtualdatapoint>
+            </graphdata>
+            <graphdata>
+                <type>1</type>
+                <legend>Status</legend>
+                <color>black</color>
+                <datapointname>Status</datapointname>
+                <isvirtualdatapoint>false</isvirtualdatapoint>
+            </graphdata>
+            </graphdatas>
+        </graph>
+        </graphs>
+        <overviewgraphs>
+        <overviewgraph>
+            <name>Status Overview</name>
+            <title>Status Overview</title>
+            <verticallabel>status code</verticallabel>
+            <rigid>false</rigid>
+            <maxvalue>5.0</maxvalue>
+            <minvalue>0.0</minvalue>
+            <displayprio>1</displayprio>
+            <timescale>1day</timescale>
+            <base1024>false</base1024>
+            <aggregated>false</aggregated>
+            <originId></originId>
+            <datapoints>
+        <overviewgraphdatapoint>
+            <name>Status</name>
+            <datapointname>Status</datapointname>
+            <cf>2</cf>
+            <aggregateMethod>sum</aggregateMethod>
+            <originId></originId>
+        </overviewgraphdatapoint>
+            </datapoints>
+            <virtualdatapoints>
+            </virtualdatapoints>
+            <lines>
+            <overviewgraphline>
+                <type>2</type>
+                <legend>##INSTANCE##</legend>
+                <datapointname>Status</datapointname>
+                <isvirtualdatapoint>false</isvirtualdatapoint>
+                <color>silver</color>
+            </overviewgraphline>
+            </lines>
+        </overviewgraph>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>
