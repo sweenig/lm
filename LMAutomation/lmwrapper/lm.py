@@ -59,7 +59,6 @@ def getDeviceByDisplayName(displayName):
 max_log_queue_size = 200
 info = True
 debug = True
-script_name = ""
 log_queue = []
 
 # actually sends the logs
