@@ -106,7 +106,11 @@ I use it for GET, POST, PUT, DELETE, and PATCH, although it does not have native
 
 LM_API("GET","/alert/alerts")
 ```
-{'total': 3, 'items': [{'resourceId': 705, 'anomaly': False, 'instanceName': 'SNMP_Network_Interfaces-Port 6 [ID:6]', 'monitorObjectId': 13, 'endEpoch': 0, 'rule': '', 'threshold': '> 1', 'type': 'dataSourceAlert', 'startEpoch': 1668631459, 'enableAnomalyAlertGeneration': '', 'internalId': 'LMD19453', 'ackComment': '', 'monitorObjectName':...
+{'total': 3, 'items': [{'resourceId': 705, 'anomaly': False, 'instanceName':
+ 'SNMP_Network_Interfaces-Port 6 [ID:6]', 'monitorObjectId': 13, 'endEpoch': 0, 'rule': '', 
+ 'threshold': '> 1', 'type': 'dataSourceAlert', 'startEpoch': 1668631459, 
+ 'enableAnomalyAlertGeneration': '', 'internalId': 'LMD19453', 'ackComment': '', 
+ 'monitorObjectName':...
 ---OUTPUT TRUNCATED---
 ```
 
