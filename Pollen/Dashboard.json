@@ -1,0 +1,1457 @@
+{
+  "santabaRelease": 185,
+  "widgetTokens": [
+    {
+      "name": "latitude",
+      "value": "30.5788"
+    },
+    {
+      "name": "location",
+      "value": "Leander"
+    },
+    {
+      "name": "longitude",
+      "value": "-97.8531"
+    }
+  ],
+  "name": "Pollen Count",
+  "description": "",
+  "overwriteGroupFields": false,
+  "widgetsConfigVersion": 2,
+  "type": "dashboard",
+  "widgets": [
+    {
+      "position": {
+        "col": 1,
+        "sizex": 2,
+        "row": 3,
+        "sizey": 2
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "##location## - Grass Current & Forecast",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "graphInfo": {
+          "virtualDataPoints": [],
+          "minValue": 0,
+          "topX": 0,
+          "maxValue": "NaN",
+          "dataPoints": [
+            {
+              "dataPointName": "1d_count_grass_pollen",
+              "instanceName": {
+                "isGlob": true,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "silver",
+                "legend": "Next 24 Hours",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "1d_count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "count_grass_pollen",
+              "instanceName": {
+                "isGlob": true,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "lime",
+                "legend": "Current",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "2d_count_grass_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "aqua",
+                "legend": "Next 48 Hours",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "2d_count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            }
+          ],
+          "verticalLabel": "pollen grains",
+          "aggregate": true,
+          "desc": true,
+          "scaleUnit": 1000,
+          "globalConsolidateFunction": "default"
+        },
+        "type": "cgraph",
+        "timescale": "7days",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 3,
+        "sizex": 2,
+        "row": 3,
+        "sizey": 2
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "##location## - Trees Current & Forecast",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "graphInfo": {
+          "virtualDataPoints": [],
+          "minValue": 0,
+          "topX": 0,
+          "maxValue": "NaN",
+          "dataPoints": [
+            {
+              "dataPointName": "1d_count_tree_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "silver",
+                "legend": "Next 24 Hours",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "1d_count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "count_tree_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "lime",
+                "legend": "Current",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "2d_count_tree_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "aqua",
+                "legend": "Next 48 Hours",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "2d_count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            }
+          ],
+          "verticalLabel": "pollen grains",
+          "aggregate": true,
+          "desc": true,
+          "scaleUnit": 1000,
+          "globalConsolidateFunction": "default"
+        },
+        "type": "cgraph",
+        "timescale": "7days",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 5,
+        "sizex": 2,
+        "row": 3,
+        "sizey": 2
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "##location## - Weed Current & Forecast",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "graphInfo": {
+          "virtualDataPoints": [],
+          "minValue": 0,
+          "topX": 0,
+          "maxValue": "NaN",
+          "dataPoints": [
+            {
+              "dataPointName": "1d_count_weed_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "silver",
+                "legend": "Next 24 Hours",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "1d_count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "count_weed_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "lime",
+                "legend": "Current",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "2d_count_weed_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "aqua",
+                "legend": "Next 48 Hours",
+                "type": "line",
+                "option": "custom"
+              },
+              "name": "2d_count",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            }
+          ],
+          "verticalLabel": "pollen grains",
+          "aggregate": true,
+          "desc": true,
+          "scaleUnit": 1000,
+          "globalConsolidateFunction": "default"
+        },
+        "type": "cgraph",
+        "timescale": "7days",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 1,
+        "sizex": 2,
+        "row": 5,
+        "sizey": 2
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "##location## - Grass Risk Factor",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "graphInfo": {
+          "virtualDataPoints": [],
+          "minValue": 0,
+          "topX": 0,
+          "maxValue": "NaN",
+          "dataPoints": [
+            {
+              "dataPointName": "risk_grass_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "lime",
+                "legend": "Current",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "risk",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "1d_risk_grass_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "silver",
+                "legend": "Next 24 Hours",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "1d_risk",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "2d_risk_grass_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "blue",
+                "legend": "Next 48 Hours",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "2d_risk",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            }
+          ],
+          "verticalLabel": "0=Low, 4=Very High",
+          "aggregate": true,
+          "desc": true,
+          "scaleUnit": 1000,
+          "globalConsolidateFunction": "default"
+        },
+        "type": "cgraph",
+        "timescale": "5hour",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 3,
+        "sizex": 2,
+        "row": 5,
+        "sizey": 2
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "##location## - Tree Risk Factor",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "graphInfo": {
+          "virtualDataPoints": [],
+          "minValue": 0,
+          "topX": 0,
+          "maxValue": "NaN",
+          "dataPoints": [
+            {
+              "dataPointName": "risk_tree_pollen",
+              "instanceName": {
+                "isGlob": true,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "lime",
+                "legend": "Current",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "risk",
+              "aggregateFunction": "AVERAGE",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "1d_risk_tree_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "silver",
+                "legend": "Next 24 Hours",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "1d_risk",
+              "aggregateFunction": "AVERAGE",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "2d_risk_tree_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "blue",
+                "legend": "Next 48 Hours",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "2d_risk",
+              "aggregateFunction": "AVERAGE",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            }
+          ],
+          "verticalLabel": "0=Low, 4=Very High",
+          "aggregate": true,
+          "desc": true,
+          "scaleUnit": 1000,
+          "globalConsolidateFunction": "default"
+        },
+        "type": "cgraph",
+        "timescale": "5hour",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 5,
+        "sizex": 2,
+        "row": 5,
+        "sizey": 2
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "##location## - Weed Risk Factor",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "graphInfo": {
+          "virtualDataPoints": [],
+          "minValue": 0,
+          "topX": 0,
+          "maxValue": "NaN",
+          "dataPoints": [
+            {
+              "dataPointName": "risk_weed_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "lime",
+                "legend": "Current",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "risk",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "1d_risk_weed_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "silver",
+                "legend": "Next 24 Hours",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "1d_risk",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            },
+            {
+              "dataPointName": "2d_risk_weed_pollen",
+              "instanceName": {
+                "isGlob": false,
+                "value": "##location##"
+              },
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "consolidateFunction": "average",
+              "display": {
+                "color": "blue",
+                "legend": "Next 48 Hours",
+                "type": "column",
+                "option": "custom"
+              },
+              "name": "2d_risk",
+              "aggregateFunction": "SUM",
+              "deviceDisplayName": {
+                "isGlob": false,
+                "value": "Ambee"
+              },
+              "deviceGroupFullPath": {
+                "isGlob": true,
+                "value": "*"
+              }
+            }
+          ],
+          "verticalLabel": "0=Low, 4=Very High",
+          "aggregate": true,
+          "desc": true,
+          "scaleUnit": 1000,
+          "globalConsolidateFunction": "default"
+        },
+        "type": "cgraph",
+        "timescale": "5hour",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 1,
+        "sizex": 2,
+        "row": 1,
+        "sizey": 2
+      },
+      "config": {
+        "bigNumberInfo": {
+          "virtualDataPoints": [],
+          "counters": [],
+          "dataPoints": [
+            {
+              "dataPointName": "count_grass_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "current",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            },
+            {
+              "dataPointName": "1d_count_grass_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "1d",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            },
+            {
+              "dataPointName": "2d_count_grass_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "2d",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            }
+          ],
+          "bigNumberItems": [
+            {
+              "dataPointName": "current",
+              "useCommaSeparators": false,
+              "bottomLabel": "Current",
+              "rounding": 0,
+              "position": 1,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            },
+            {
+              "dataPointName": "1d",
+              "useCommaSeparators": false,
+              "bottomLabel": "Next 24 Hours",
+              "rounding": 0,
+              "position": 2,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            },
+            {
+              "dataPointName": "2d",
+              "useCommaSeparators": false,
+              "bottomLabel": "Next 48 Hours",
+              "rounding": 0,
+              "position": 3,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            }
+          ]
+        },
+        "displaySettings": {},
+        "name": "##location## - Current Pollen Counts",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "type": "bigNumber",
+        "timescale": "day",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 3,
+        "sizex": 2,
+        "row": 1,
+        "sizey": 2
+      },
+      "config": {
+        "bigNumberInfo": {
+          "virtualDataPoints": [],
+          "counters": [],
+          "dataPoints": [
+            {
+              "dataPointName": "count_tree_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "current",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            },
+            {
+              "dataPointName": "1d_count_tree_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "1d",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            },
+            {
+              "dataPointName": "2d_count_tree_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "2d",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            }
+          ],
+          "bigNumberItems": [
+            {
+              "dataPointName": "current",
+              "useCommaSeparators": false,
+              "bottomLabel": "Current",
+              "rounding": 0,
+              "position": 1,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            },
+            {
+              "dataPointName": "1d",
+              "useCommaSeparators": false,
+              "bottomLabel": "Next 24 Hours",
+              "rounding": 0,
+              "position": 2,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            },
+            {
+              "dataPointName": "2d",
+              "useCommaSeparators": false,
+              "bottomLabel": "Next 48 Hours",
+              "rounding": 0,
+              "position": 3,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            }
+          ]
+        },
+        "displaySettings": {},
+        "name": "##location## - Current Pollen Counts",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "type": "bigNumber",
+        "timescale": "day",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 5,
+        "sizex": 2,
+        "row": 1,
+        "sizey": 2
+      },
+      "config": {
+        "bigNumberInfo": {
+          "virtualDataPoints": [],
+          "counters": [],
+          "dataPoints": [
+            {
+              "dataPointName": "count_weed_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "current",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            },
+            {
+              "dataPointName": "1d_count_weed_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "1d",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            },
+            {
+              "dataPointName": "2d_count_weed_pollen",
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "2d",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*"
+            }
+          ],
+          "bigNumberItems": [
+            {
+              "dataPointName": "current",
+              "useCommaSeparators": false,
+              "bottomLabel": "Current",
+              "rounding": 0,
+              "position": 1,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            },
+            {
+              "dataPointName": "1d",
+              "useCommaSeparators": false,
+              "bottomLabel": "Next 24 Hours",
+              "rounding": 0,
+              "position": 2,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            },
+            {
+              "dataPointName": "2d",
+              "useCommaSeparators": false,
+              "bottomLabel": "Next 48 Hours",
+              "rounding": 0,
+              "position": 3,
+              "rightLabel": "",
+              "colorThresholds": [
+                {
+                  "level": 2,
+                  "threshold": 29,
+                  "relation": ">"
+                },
+                {
+                  "level": 3,
+                  "threshold": 60,
+                  "relation": ">"
+                },
+                {
+                  "level": 4,
+                  "threshold": 341,
+                  "relation": ">"
+                }
+              ]
+            }
+          ]
+        },
+        "displaySettings": {},
+        "name": "##location## - Current Pollen Counts",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "type": "bigNumber",
+        "timescale": "day",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 1,
+        "sizex": 12,
+        "row": 7,
+        "sizey": 10
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "Weather Map",
+        "isCustom": false,
+        "description": "",
+        "resources": [{
+          "type": "html",
+          "URL": "https://embed.windy.com/embed2.html?lat=##latitude##&lon=##longitude##&detailLat=##latitude##&detailLon=##longitude##&zoom=6&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=true&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1"
+        }],
+        "theme": "newBorderGray",
+        "interval": 15,
+        "type": "html",
+        "timescale": "day",
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 7,
+        "sizex": 6,
+        "row": 3,
+        "sizey": 4
+      },
+      "config": {
+        "displaySettings": {},
+        "name": "##location## - Pollen by Species",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "type": "pieChart",
+        "timescale": "day",
+        "pieChartInfo": {
+          "maxSlicesCanBeShown": 25,
+          "virtualDataPoints": [],
+          "showLabelsAndLinesOnPC": true,
+          "counters": [],
+          "dataPoints": [
+            {
+              "dataPointName": "Tree_CypressJuniperCedar",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_CypressJuniperCedar",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_Ash",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_Ash",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_Birch",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_Birch",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_Elm",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_Elm",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_Maple",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_Maple",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_Mulberry",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_Mulberry",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_Oak",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_Oak",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_Pine",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_Pine",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Tree_PoplarCottonwood",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Tree_PoplarCottonwood",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "species_others",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "species_others",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Grass_GrassPoaceae",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Grass_GrassPoaceae",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            },
+            {
+              "dataPointName": "Weed_Ragweed",
+              "top10": false,
+              "instanceName": "Ambee_Pollen-##location##",
+              "dataSourceFullName": "Pollen Counts (Ambee_Pollen)",
+              "name": "Weed_Ragweed",
+              "aggregateFunction": "SUM",
+              "deviceGroupFullPath": "*",
+              "deviceDisplayName": "*",
+              "aggregate": false
+            }
+          ],
+          "hideZeroPercentSlices": true,
+          "groupRemainingAsOthers": false,
+          "pieChartItems": [
+            {
+              "dataPointName": "Weed_Ragweed",
+              "color": "Auto",
+              "legend": "Ragweed"
+            },
+            {
+              "dataPointName": "Grass_GrassPoaceae",
+              "color": "Auto",
+              "legend": "Poaceae (Grass)"
+            },
+            {
+              "dataPointName": "species_others",
+              "color": "Auto",
+              "legend": "Others"
+            },
+            {
+              "dataPointName": "Tree_PoplarCottonwood",
+              "color": "Auto",
+              "legend": "Poplar/Cottonwood"
+            },
+            {
+              "dataPointName": "Tree_Pine",
+              "color": "Auto",
+              "legend": "Pine"
+            },
+            {
+              "dataPointName": "Tree_Oak",
+              "color": "Auto",
+              "legend": "Oak"
+            },
+            {
+              "dataPointName": "Tree_Mulberry",
+              "color": "Auto",
+              "legend": "Mulberry"
+            },
+            {
+              "dataPointName": "Tree_Maple",
+              "color": "Auto",
+              "legend": "Maple"
+            },
+            {
+              "dataPointName": "Tree_Elm",
+              "color": "Auto",
+              "legend": "Elm"
+            },
+            {
+              "dataPointName": "Tree_Birch",
+              "color": "Auto",
+              "legend": "Birch"
+            },
+            {
+              "dataPointName": "Tree_Ash",
+              "color": "Auto",
+              "legend": "Ash"
+            },
+            {
+              "dataPointName": "Tree_CypressJuniperCedar",
+              "color": "Auto",
+              "legend": "Cypress/Juniper/Cedar"
+            }
+          ],
+          "title": "##location## - Pollen by Species"
+        },
+        "version": 2
+      }
+    },
+    {
+      "position": {
+        "col": 7,
+        "sizex": 6,
+        "row": 1,
+        "sizey": 2
+      },
+      "config": {
+        "displaySettings": {
+          "isShowAll": false,
+          "showFilter": false,
+          "columns": [
+            {
+              "visible": true,
+              "columnLabel": "Severity",
+              "columnSize": 66,
+              "columnKey": "alert-severity"
+            },
+            {
+              "visible": true,
+              "columnLabel": "Began",
+              "columnSize": 243,
+              "columnKey": "alert-began"
+            },
+            {
+              "visible": true,
+              "columnLabel": "Resource/Website",
+              "columnSize": 133,
+              "columnKey": "alert-device"
+            },
+            {
+              "visible": true,
+              "columnLabel": "LogicModule",
+              "columnSize": 100,
+              "columnKey": "alert-datasource"
+            },
+            {
+              "visible": true,
+              "columnLabel": "Instance",
+              "columnSize": 157,
+              "columnKey": "alert-datasource-instance"
+            },
+            {
+              "visible": true,
+              "columnLabel": "Datapoint",
+              "columnSize": 184,
+              "columnKey": "alert-datapoint"
+            },
+            {
+              "visible": true,
+              "columnLabel": "Value",
+              "columnSize": 128,
+              "columnKey": "alert-value"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Static Threshold",
+              "columnKey": "alert-static-threshold"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Dynamic Threshold",
+              "columnKey": "alert-dynamic-threshold"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Group",
+              "columnKey": "alert-group"
+            },
+            {
+              "visible": true,
+              "columnLabel": "Notes",
+              "columnSize": 159,
+              "columnKey": "alert-notes"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Acknowledged By",
+              "columnKey": "alert-acked-by"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Acknowledged On",
+              "columnKey": "alert-acked-on"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Cleared On",
+              "columnKey": "alert-cleared-on"
+            },
+            {
+              "visible": false,
+              "columnLabel": "In SDT",
+              "columnKey": "alert-in-sdt"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Alert Rule",
+              "columnKey": "alert-rule-name"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Escalation Chain",
+              "columnKey": "alert-escalation-chain"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Instance Description",
+              "columnKey": "alert-datasource-instance-description"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Full Path",
+              "columnKey": "alert-full-path"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Routing State",
+              "columnKey": "alert-routing-state"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Dependency Role",
+              "columnKey": "alert-dependency-role"
+            },
+            {
+              "visible": false,
+              "columnLabel": "Dependent Alerts",
+              "columnKey": "alert-dependent-alerts"
+            }
+          ],
+          "playSound": {
+            "criticalAlertAudioFileName": "",
+            "errorAlertAudioFileName": "",
+            "warningAlertAudioFileName": "",
+            "shouldPlay": false
+          },
+          "fontsize": "normal-font",
+          "sort": "-startEpoch"
+        },
+        "name": "Pollen Advisories",
+        "description": "",
+        "theme": "newBorderGray",
+        "interval": 3,
+        "filters": {
+          "severity": "",
+          "sdted": "all",
+          "chain": "",
+          "instance": "",
+          "anomaly": "",
+          "dataPoint": "",
+          "rule": "",
+          "acked": "all",
+          "dependencyRoutingState": "",
+          "dependencyRole": "",
+          "host": "Ambee",
+          "keyword": "",
+          "dataSource": "",
+          "cleared": "no",
+          "group": ""
+        },
+        "type": "alert",
+        "timescale": "day",
+        "version": 2
+      }
+    }
+  ],
+  "version": 2
+}
