@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+    <entry type="predatasource">
+        <version>1683120760</version>
+        <name>PaloAlto_FW_Chassis_LEDs</name>
+        <displayedas>PaloAlto FW Chassis LEDs</displayedas>
+        <description></description>
+        <collector>batchscript</collector>
+        <hasMultiInstances>true</hasMultiInstances>
+        <useWildValueAsUniqueIdentifier>true</useWildValueAsUniqueIdentifier>
+        <schedule>600</schedule>
+        <appliesTo>paloalto.apikey.pass</appliesTo>
+        <wildcardauto>true</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript>ad_script</wildcardlinuxscript>
+        <wildcardlinuxcmdline>type=&#34;embeded&#34; </wildcardlinuxcmdline>
+        <wildcardwinscript>ad_script</wildcardwinscript>
+        <wildcardwincmdline>type=&#34;embeded&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>def host = hostProps.get(&#34;system.hostname&#34;)
+def port = hostProps.get(&#34;paloalto.port&#34;)?: 443
+def apikey = hostProps.get(&#34;paloalto.apikey.pass&#34;)?.trim()
+if (apikey == null) {println(&#34;No paloalto.apikey.pass set&#34;);return 1}
+
+def response
+def command = URLEncoder.encode(&#34;&#60;show&#62;&#60;system&#62;&#60;state&#62;&#60;filter&#62;chassis.leds&#60;/filter&#62;&#60;/state&#62;&#60;/system&#62;&#60;/show&#62;&#34;, &#34;UTF-8&#34;)
+def url = &#34;https://${host}:$port/api/?type=op&#38;key=${apikey}&#38;cmd=${command}&#34;
+def getRequestConn = url.toURL().openConnection()
+if (getRequestConn.responseCode == 200) {
+    body = getRequestConn.content.text
+    response = new XmlSlurper().parseText(body)
+    data = response.toString()
+    data.tokenize(&#34;{,}&#34;).each{
+        kv = it.tokenize(&#34;:&#34;)
+        if ((it.trim() != &#34;chassis.leds:&#34;) &#38;&#38; (kv.size() &#62; 1)){
+            wildvalue = kv[0].replaceAll(&#39;\&#39;&#39;,&#39;&#39;).trim()
+            println(&#34;${wildvalue}##${wildvalue}&#34;)
+        }
+    }
+    return 0
+} else {return 2}</wildcardgroovyscript>
+        <wildcardschedule>0</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <agdmethod>none</agdmethod>
+        <agdparams></agdparams>
+        <group>_Aqueduct</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[],"params":{"type":"embeded","groovyscript":"def host = hostProps.get(\"system.hostname\")\r\ndef port = hostProps.get(\"paloalto.port\")?: 443\r\ndef apikey = hostProps.get(\"paloalto.apikey.pass\")?.trim()\r\nif (apikey == null) {println(\"No paloalto.apikey.pass set\");return 1}\r\n\r\ndef response\r\ndef command = URLEncoder.encode(\"<show><system><state><filter>chassis.leds<\/filter><\/state><\/system><\/show>\", \"UTF-8\")\r\ndef url = \"https://${host}:$port/api/?type=op&key=${apikey}&cmd=${command}\"\r\ndef getRequestConn = url.toURL().openConnection()\r\nif (getRequestConn.responseCode == 200) {\r\n    body = getRequestConn.content.text\r\n    response = new XmlSlurper().parseText(body)\r\n    data = response.toString()\r\n    data.tokenize(\"{,}\").each{\r\n        kv = it.tokenize(\":\")\r\n        if ((it.trim() != \"chassis.leds:\") && (kv.size() > 1)){\r\n            wildvalue = kv[0].replaceAll('\\'','').trim()\r\n            println(\"${wildvalue}##${wildvalue}\")\r\n        }\r\n    }\r\n    return 0\r\n} else {return 2}"}}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>embed</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>def host = hostProps.get(&#34;system.hostname&#34;)
+def port = hostProps.get(&#34;paloalto.port&#34;)?: 443
+def apikey = hostProps.get(&#34;paloalto.apikey.pass&#34;)?.trim()
+if (apikey == null) {println(&#34;No paloalto.apikey.pass set&#34;);return 1}
+
+status_map = [
+    &#34;Off&#34;: 0,
+    &#34;Green&#34;: 1,
+    &#34;Yellow&#34;: 2,
+    &#34;Red&#34;: 3,
+    &#34;AndAnother&#34;: 4
+]
+def response
+def command = URLEncoder.encode(&#34;&#60;show&#62;&#60;system&#62;&#60;state&#62;&#60;filter&#62;chassis.leds&#60;/filter&#62;&#60;/state&#62;&#60;/system&#62;&#60;/show&#62;&#34;, &#34;UTF-8&#34;)
+def url = &#34;https://${host}:$port/api/?type=op&#38;key=${apikey}&#38;cmd=${command}&#34;
+def getRequestConn = url.toURL().openConnection()
+if (getRequestConn.responseCode == 200) {
+    body = getRequestConn.content.text
+    response = new XmlSlurper().parseText(body)
+    data = response.toString()
+    data.tokenize(&#34;{,}&#34;).each{
+        kv = it.tokenize(&#34;:&#34;)
+        if ((it.trim() != &#34;chassis.leds:&#34;) &#38;&#38; (kv.size() &#62; 1)){
+            println(&#34;${kv[0].replaceAll(&#39;\&#39;&#39;,&#39;&#39;).trim()}.status:${status_map[kv[1].trim()]}&#34;)
+        }
+    }
+    return 0
+} else {return 2}</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>status</name>
+            <originId>xASJ4NljRyWF0HRBOZ0glw</originId>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.status</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        <overviewgraph>
+            <name>LEDs</name>
+            <title>LEDs</title>
+            <verticallabel>0=Off, 1=Green, others unk.</verticallabel>
+            <rigid>false</rigid>
+            <maxvalue>NaN</maxvalue>
+            <minvalue>0.0</minvalue>
+            <displayprio>1</displayprio>
+            <timescale>1day</timescale>
+            <base1024>false</base1024>
+            <aggregated>false</aggregated>
+            <originId></originId>
+            <datapoints>
+        <overviewgraphdatapoint>
+            <name>status</name>
+            <datapointname>status</datapointname>
+            <cf>1</cf>
+            <aggregateMethod>sum</aggregateMethod>
+            <originId></originId>
+        </overviewgraphdatapoint>
+            </datapoints>
+            <virtualdatapoints>
+            </virtualdatapoints>
+            <lines>
+            <overviewgraphline>
+                <type>1</type>
+                <legend>##INSTANCE##</legend>
+                <datapointname>status</datapointname>
+                <isvirtualdatapoint>false</isvirtualdatapoint>
+                <color>silver</color>
+            </overviewgraphline>
+            </lines>
+        </overviewgraph>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>
