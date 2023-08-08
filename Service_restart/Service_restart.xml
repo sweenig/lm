@@ -5,24 +5,33 @@
   <errmsg>OK</errmsg>
   <interval>0</interval>
     <entry type="predatasource">
-        <version>1585341117</version>
+        <version>1691517979</version>
         <name>Service_restart</name>
         <displayedas>Services Monitored and Restarted if Needed</displayedas>
         <description>restart service if needed. 1=already running, 2=first restart succeeded, 3=second try succeeded, 4=second try failed</description>
         <collector>script</collector>
         <hasMultiInstances>true</hasMultiInstances>
+        <useWildValueAsUniqueIdentifier>true</useWildValueAsUniqueIdentifier>
         <schedule>60</schedule>
         <appliesTo>isWindows() &#38;&#38; Service_restart.services</appliesTo>
         <wildcardauto>true</wildcardauto>
         <wildcardpersist>false</wildcardpersist>
         <wildcardlinuxscript>ad_script</wildcardlinuxscript>
-        <wildcardlinuxcmdline>type=&#34;embeded&#34; </wildcardlinuxcmdline>
+        <wildcardlinuxcmdline>type=&#34;powerShell&#34; </wildcardlinuxcmdline>
         <wildcardwinscript>ad_script</wildcardwinscript>
-        <wildcardwincmdline>type=&#34;embeded&#34; </wildcardwincmdline>
-        <wildcardgroovyscript>hostProps.get(&#34;Service_restart.services&#34;).tokenize(&#34;,|&#34;).each{
-    println(&#34;${it}##${it}&#34;)
+        <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
+        <wildcardgroovyscript>$hostname = &#39;##HOSTNAME##&#39;
+$prop = &#39;##Service_restart.services##&#39;
+$splitprops = $prop.split(&#34;,| &#34;,[System.StringSplitOptions]::RemoveEmptyEntries)
+Foreach ($i in $splitprops){
+  $service = get-service -name $i -ComputerName $hostname
+  if ($service){
+    &#34;$($service.Name)##$($service.DisplayName)&#34;
+  } else {
+    Write-Host &#34;Service &#39;$i&#39; not found.&#34;
+  }
 }
-return 0</wildcardgroovyscript>
+exit 0</wildcardgroovyscript>
         <wildcardschedule>0</wildcardschedule>
         <wildcarddisable>false</wildcarddisable>
         <wildcarddeleteinactive>true</wildcarddeleteinactive>
@@ -31,7 +40,7 @@ return 0</wildcardgroovyscript>
         <group>_WeenigWare</group>
         <tags>suding</tags>
         <technology>Written by M. Suding. Updated by S. Weenig</technology>
-        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[],"params":{"type":"embeded","groovyscript":"hostProps.get(\"Service_restart.services\").tokenize(\",|\").each{\n    println(\"${it}##${it}\")\n}\nreturn 0"}}]]></adlist>
+        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"$hostname = '##HOSTNAME##'\r\n$prop = '##Service_restart.services##'\r\n$splitprops = $prop.split(\",| \",[System.StringSplitOptions]::RemoveEmptyEntries)\r\nForeach ($i in $splitprops){\r\n  $service = get-service -name $i -ComputerName $hostname\r\n  if ($service){\r\n    \"$($service.Name)##$($service.DisplayName)\"\r\n  } else {\r\n    Write-Host \"Service '$i' not found.\"\r\n  }\r\n}\r\nexit 0"}}]]></adlist>
         <schemaVersion>2</schemaVersion>
         <dataSourceType>1</dataSourceType>
         <attributes>
@@ -101,23 +110,39 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
             <value></value>
             <comment></comment>
         </attribute>
+        <attribute>
+            <name>properties</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>manualConnections</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
         </attributes>
         <datapoints>
         <datapoint>
             <name>result_code</name>
+            <originId>ThEwx6GXREylsxSQnwF0jA</originId>
             <dataType>7</dataType>
             <type>2</type>
             <postprocessormethod>regex</postprocessormethod>
             <postprocessorparam>result_code: (\d+)</postprocessorparam>
             <usevalue>output</usevalue>
-            <alertexpr>&#62;= 2 3 4</alertexpr>
+            <alertexpr>&#62;= 4 4</alertexpr>
             <alertmissing>3</alertmissing>
             <alertsubject></alertsubject>
             <alertbody></alertbody>
             <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
             <description>1=ok, 2=first restart worked, 3=second worked, 4=second failed so probably alert</description>
             <maxvalue></maxvalue>
             <minvalue></minvalue>
+            <maxdigits>4</maxdigits>
             <userparam1></userparam1>
             <userparam2></userparam2>
             <userparam3></userparam3>
@@ -128,19 +153,25 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
         </datapoint>
         <datapoint>
             <name>runtime_ms</name>
+            <originId>KpdzhxjnTzqCCLhqYrEP1w</originId>
             <dataType>4</dataType>
             <type>2</type>
             <postprocessormethod>none</postprocessormethod>
             <postprocessorparam></postprocessorparam>
             <usevalue>responseTime</usevalue>
-            <alertexpr>&#62; 11222</alertexpr>
+            <alertexpr></alertexpr>
             <alertmissing>3</alertmissing>
             <alertsubject></alertsubject>
             <alertbody></alertbody>
             <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
             <description></description>
             <maxvalue></maxvalue>
             <minvalue></minvalue>
+            <maxdigits>4</maxdigits>
             <userparam1></userparam1>
             <userparam2></userparam2>
             <userparam3></userparam3>
@@ -154,7 +185,7 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
         <graph>
             <name>Service restart</name>
             <title>Service restart</title>
-            <verticallabel>status 1=ok, 2=restart, 3=two restarts, 4=two restarts failed</verticallabel>
+            <originId></originId>            <verticallabel>status 1=ok, 2=restart, 3=two restarts, 4=two restarts failed</verticallabel>
             <rigid>false</rigid>
             <maxvalue>NaN</maxvalue>
             <minvalue>NaN</minvalue>
@@ -165,6 +196,7 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
         <graphdatapoint>
             <name>result_code</name>
             <datapointname>result_code</datapointname>
+            <originId></originId>
             <cf>1</cf>
         </graphdatapoint>
             </graphdatapoints>
@@ -183,7 +215,7 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
         <graph>
             <name>Service restart runtime</name>
             <title>service restart runtime</title>
-            <verticallabel>milliseconds</verticallabel>
+            <originId></originId>            <verticallabel>milliseconds</verticallabel>
             <rigid>false</rigid>
             <maxvalue>NaN</maxvalue>
             <minvalue>NaN</minvalue>
@@ -194,6 +226,7 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
         <graphdatapoint>
             <name>runtime_ms</name>
             <datapointname>runtime_ms</datapointname>
+            <originId></originId>
             <cf>1</cf>
         </graphdatapoint>
             </graphdatapoints>
@@ -211,6 +244,39 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
         </graph>
         </graphs>
         <overviewgraphs>
+        <overviewgraph>
+            <name>Status</name>
+            <title>Status</title>
+            <verticallabel>status 1=ok, 2=restart, 3=two restarts, 4=two restarts failed</verticallabel>
+            <rigid>false</rigid>
+            <maxvalue>5.0</maxvalue>
+            <minvalue>0.0</minvalue>
+            <displayprio>1</displayprio>
+            <timescale>1day</timescale>
+            <base1024>false</base1024>
+            <aggregated>false</aggregated>
+            <originId></originId>
+            <datapoints>
+        <overviewgraphdatapoint>
+            <name>result_code</name>
+            <datapointname>result_code</datapointname>
+            <cf>1</cf>
+            <aggregateMethod>sum</aggregateMethod>
+            <originId></originId>
+        </overviewgraphdatapoint>
+            </datapoints>
+            <virtualdatapoints>
+            </virtualdatapoints>
+            <lines>
+            <overviewgraphline>
+                <type>4</type>
+                <legend>##INSTANCE##</legend>
+                <datapointname>result_code</datapointname>
+                <isvirtualdatapoint>false</isvirtualdatapoint>
+                <color>silver</color>
+            </overviewgraphline>
+            </lines>
+        </overviewgraph>
         </overviewgraphs>
         <scripts>
         </scripts>

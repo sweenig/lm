@@ -1,8 +1,8 @@
 from lm import lm
 import datetime, json
 from pprint import pprint,pformat
-s = "2023/08/08 7:00:00" # %Y/%m/%d %H:%M:%S format in tz of system running the script. 8am central (my laptop) is 9am eastern (when i want to start)
-interval = 720
+s = "2023/08/08 9:00:00" # %Y/%m/%d %H:%M:%S format in tz of system running the script. 8am central (my laptop) is 9am eastern (when i want to start)
+interval = 1440
 desiredVersion = 33006 # five digit format, first two digits are major version, last 3 are minor. For 33.006 use 33006
 try:
     collectors = {x.id:x.build for x in lm.get_collector_list(size=1000).items}
