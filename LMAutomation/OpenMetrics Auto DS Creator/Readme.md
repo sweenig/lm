@@ -77,7 +77,7 @@ There are two optional arguments:
 #### Executing the script
 1. Navigate to the directory where this repo is cloned.
 2. Execute `python build_ds.py EnviroPi enviropi.local` where `EnviroPi` is the desired name of the DS and `enviropi.local` is the name of the device the OpenMetrics page is running on.
-3. If you need to specify the port and path: `python build_ds.py EnviroPi enviropi.local 8000 "/metrics"
+3. If you need to specify the port and path: `python build_ds.py EnviroPi enviropi.local 8000 "/metrics"`
 
 The output should look something like this:
 ```
