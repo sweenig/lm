@@ -66,6 +66,12 @@ noise{range="amp"} 18.740161954016713
 ```
 As you can see, the text follows a very specific format, listing out the description of the metric (on the `# HELP` line), the metric type (on the `# TYPE` line), and the metric's value on the other lines. To over-simplify it, metrics can have sub-metrics or alternate representations of the metric depending on the unit. Notice that the `temp` datapoint has a celsius and a fahrenheit representation. They're both the same metric, just different units. The `noise` datapoint also has sub-metrics. In this case, `noise` acts more like a group with the `range`s representing the different metrics under noise. 
 ### Generating the DS file
+#### Prerequisites
+You must have jinja2 and requests installed in your Python environment for this script to work. You can install them with the following command in your Python environment (either bare metal or in venv):
+```
+python -m pip install Jinja2 requests
+```
+#### Arguments
 To generate the DS file, you must have access to the OpenMetrics page. The Python script requires two arguments:
 1. ds_name: This is the name of the DataSource you want to create. For the example, this value would be EnviroPi or something similar. You would want to name it after the application hosting the OpenMetrics page.
 2. test_host: This is the (resolvable) name or IP address of the resource on which the OpenMetrics page is hosted. This does not have to be the resource(s) you will end up monitoring, but it should match the metrics on them. 
