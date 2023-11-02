@@ -1,0 +1,54 @@
+{
+    "scheduleOption": 0,
+    "metadata": {
+        "currentUuid": "nobOeXHDSJ2_ZHDpJAd0mg",
+        "originalUuid": "nobOeXHDSJ2_ZHDpJAd0mg",
+        "locatorId": "",
+        "authorCompanyUuid": "7169df93-f6bb-4eb9-8d84-9dd39b2ec6cb",
+        "registryVersion": "1.0.0",
+        "checksum": "95d168991f3cff1aed3e98c6692945a0"
+    },
+    "dataType": 0,
+    "description": "",
+    "appliesTo": "alerting_status.id && alerting_status.key",
+    "technology": "",
+    "type": 5,
+    "params": [
+        {
+            "name": "linuxcmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "linuxscript",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "scriptgroovy",
+            "comment": "",
+            "value": "import javax.crypto.Mac\r\nimport javax.crypto.spec.SecretKeySpec\r\nimport org.apache.commons.codec.binary.Hex\r\nimport com.santaba.agent.groovyapi.http.*\r\nimport groovy.json.JsonSlurper\r\nimport groovy.json.JsonOutput\r\n\r\ndebug = false\r\n\r\naccessId = hostProps.get(\"alerting_status.id\")\r\naccessKey = hostProps.get(\"alerting_status.key\")\r\n\r\ndef lm_get_request(_resourcePath, _queryParams, _accessId = accessId, _accessKey = accessKey) {\r\n    account = ''\r\n    File file = new File('../conf/agent.conf')\r\n    file.text.eachLine{if (it =~ /company=/){ account = it.split('=')[1].trim() }}\r\n    url = \"https://\" + account + \".logicmonitor.com\" + \"/santaba/rest\"\r\n    httpClient = HTTP.open(account + \".logicmonitor.com\", 443)\r\n    headers=calcSignature('GET',_resourcePath,accessKey,accessId) // calcSignature defined below\r\n    headers.put(\"X-Version\", \"3\")\r\n    fullURL = url + _resourcePath + _queryParams\r\n    if (debug){println(\"URL: \" + fullURL)}\r\n    response = httpClient.get(fullURL, headers)\r\n    if (debug){println(response)}\r\n    responseBody = httpClient.getResponseBody()\r\n    try {\r\n        allResponse = new JsonSlurper().parseText(responseBody)\r\n    } catch (Exception e) {\r\n        allResponse = responseBody\r\n    }\r\n    return allResponse\r\n}\r\n\r\ndef calcSignature(_verb,_resourcePath,_accessKey,_accessId,_data = '') {\r\n    epoch = System.currentTimeMillis()\r\n    requestVars = _verb + epoch + _data + _resourcePath\r\n    hmac = Mac.getInstance(\"HmacSHA256\")\r\n    secret = new SecretKeySpec(_accessKey.getBytes(), \"HmacSHA256\")\r\n    hmac.init(secret)\r\n    hmac_signed = Hex.encodeHexString(hmac.doFinal(requestVars.getBytes()))\r\n    signature = hmac_signed.bytes.encodeBase64()\r\n    headers = [:]\r\n    headers.put(\"Authorization\" , \"LMv1 \" + _accessId + \":\" + signature + \":\" + epoch)\r\n    return headers\r\n}\r\n\r\nlm_get_request(\"/device/devices/${hostProps.get('system.deviceId')}\",'?fields=disableAlerting').each{println(it)}\r\nreturn 0"
+        },
+        {
+            "name": "scripttype",
+            "comment": "embed",
+            "value": "embed"
+        },
+        {
+            "name": "windowscmdline",
+            "comment": "",
+            "value": ""
+        },
+        {
+            "name": "windowsscript",
+            "comment": "",
+            "value": ""
+        }
+    ],
+    "version": 1698939689,
+    "tags": "",
+    "auditVersion": 0,
+    "name": "Alerting Status",
+    "id": 266,
+    "group": "_Aqueduct"
+}
