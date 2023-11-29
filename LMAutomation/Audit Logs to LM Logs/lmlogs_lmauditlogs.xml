@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<feed  version="1.0" hasPendingRequests="false" >
+  <company></company>
+  <status>200</status>
+  <errmsg>OK</errmsg>
+  <interval>0</interval>
+  <kmsKeyId></kmsKeyId>
+  <pkdsRegion></pkdsRegion>
+    <entry type="predatasource">
+        <version>1698079126</version>
+        <name>lmlogs_lmauditlogs</name>
+        <displayedas>LM Audit Logs to LM Logs</displayedas>
+        <description></description>
+        <collector>script</collector>
+        <hasMultiInstances>false</hasMultiInstances>
+        <useWildValueAsUniqueIdentifier>false</useWildValueAsUniqueIdentifier>
+        <schedule>60</schedule>
+        <appliesTo>lmlogs.lmauditlogs.id &#38;&#38; lmlogs.lmauditlogs.key</appliesTo>
+        <wildcardauto>false</wildcardauto>
+        <wildcardpersist>false</wildcardpersist>
+        <wildcardlinuxscript></wildcardlinuxscript>
+        <wildcardlinuxcmdline></wildcardlinuxcmdline>
+        <wildcardwinscript></wildcardwinscript>
+        <wildcardwincmdline></wildcardwincmdline>
+        <wildcardgroovyscript></wildcardgroovyscript>
+        <wildcardschedule>1440</wildcardschedule>
+        <wildcarddisable>false</wildcarddisable>
+        <wildcarddeleteinactive>false</wildcarddeleteinactive>
+        <agdmethod>none</agdmethod>
+        <agdparams></agdparams>
+        <group>_Aqueduct</group>
+        <tags></tags>
+        <technology></technology>
+        <adlist><![CDATA[{"agdmethod":"none","agdparams":"","locatorId":"","id":0,"filters":[],"params":{},"version":""}]]></adlist>
+        <schemaVersion>2</schemaVersion>
+        <dataSourceType>1</dataSourceType>
+        <attributes>
+        <attribute>
+            <name>scripttype</name>
+            <value>embed</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>scriptgroovy</name>
+            <value>// (C) 2023 Aqueduct Technologies Inc.
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import org.apache.commons.codec.binary.Hex
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+import com.santaba.agent.groovyapi.http.HTTP
+import com.santaba.agent.util.Settings
+import com.santaba.agent.util.script.ScriptCache
+
+debug = false
+
+creds = [
+    &#34;id&#34;: hostProps.get(&#34;lmlogs.lmauditlogs.id&#34;),
+    &#34;key&#34;: hostProps.get(&#34;lmlogs.lmauditlogs.key&#34;)
+]
+ScriptCache collectorCache = ScriptCache.getCache()
+// Map proxyInfo = getProxyInfo()
+
+groups = lm_api(&#34;GET&#34;, &#34;/setting/admin/groups&#34;, creds, [&#34;size&#34;: 1000, &#34;offset&#34;: 0, &#34;fields&#34;: &#34;id,name&#34;])
+groupsMap = groups.data.items.collectEntries{[it.id,it.name]}
+if (debug) {println(groupsMap)}
+users = lm_api(&#34;GET&#34;, &#34;/setting/admins&#34;, creds, [&#34;size&#34;: 1000, &#34;offset&#34;: 0, &#34;fields&#34;: &#34;username,adminGroupIds&#34;])
+usersMap = users.data.items.collectEntries{[it.username,groupsMap[it.adminGroupIds[0]]]}
+if (debug) {println(usersMap)}
+
+oldestTimestamp =
+    collectorCache.get(&#34;audit_log_previous_newest_timestamp&#34;)!=null ?
+    collectorCache.get(&#34;audit_log_previous_newest_timestamp&#34;) as Long : 0
+newestTimestamp = ((new Date()).getTime() / 1000).toLong()
+
+if (debug) {println(&#34;Collector cache data: ${oldestTimestamp}&#34;)}
+
+queryParams = [
+    &#39;size&#39;:1000,
+    &#39;offset&#39;:0,
+    &#39;filter&#39;:&#34;happenedOn&#62;\&#34;${oldestTimestamp}\&#34;,happenedOn&#60;:\&#34;${newestTimestamp}\&#34;,username:\&#34;(!(System*|AQ_NOC*))\&#34;&#34;
+]
+response = lm_api(&#34;GET&#34;, &#34;/setting/accesslogs&#34;, creds, queryParams)
+if (response.code.toInteger() == 200){
+    if (debug) {println(&#34;Fetched ${response.data.items.size()} log entries.&#34;)}
+    events = []
+    response.data.items.each{
+        event_dict = [:]
+        event_dict[&#34;_lm.logsource_name&#34;] = &#34;LMAuditLog&#34;
+        event_dict[&#34;timestamp&#34;] = it.happenedOn
+        event_dict[&#34;message&#34;] = it.description
+        event_dict[&#34;sourceIP&#34;] = it.ip
+        event_dict[&#34;username&#34;] = it.username // to do: lookup this against existing user list to return customer and validity of user
+        event_dict[&#34;Tenant&#34;] = usersMap[it.username] ?: it.username
+        event_dict[&#34;entryId&#34;] = it.id
+        event_dict[&#34;_lm.resourceId&#34;] = [&#34;system.deviceId&#34;: hostProps.get(&#39;system.deviceId&#39;)]
+        events.add(event_dict)
+    }
+    payload = JsonOutput.toJson(events)
+    if (debug){println(payload)}
+    push_logs = lm_log(&#39;/log/ingest&#39;,payload)
+    
+    collectorCache.set(&#34;audit_log_previous_newest_timestamp&#34;, newestTimestamp as String, 12 * 60 * 60 * 1000)
+    if (push_logs.toString() == &#34;202&#34;){
+        return events.size()
+    } else {
+        println(&#34;There was an error ${push_logs} sending the logs to LM&#34;)
+        return -2
+    }
+} else {
+    println(&#34;There was an error ${response.code} fetching the logs: ${response}&#34;)
+    return -1
+}
+
+def lm_api(httpVerb, resourcePath, credentials, queryParams = [:], payload = &#34;&#34;, proxyInfo = null) {
+    account = credentials[&#39;account&#39;] ?: Settings.getSetting(Settings.AGENT_COMPANY) //Grab portal account name from the Collector&#39;s config file
+    if (debug) {println(&#34;${httpVerb}ing ${resourcePath} from ${account} using parameters: ${queryParams}&#34;)}
+    accessId = credentials[&#39;id&#39;]
+    accessKey = credentials[&#39;key&#39;]
+    url = &#34;https://&#34; + account + &#34;.logicmonitor.com&#34; + &#34;/santaba/rest&#34;
+    headers = calcSignature(httpVerb,resourcePath,accessKey,accessId,payload)
+    httpClient = HTTP.open(account + &#34;.logicmonitor.com&#34;, 443)
+    if (proxyInfo?.enabled) {
+        if(proxyInfo.user &#38;&#38; proxyInfo.pass){
+            httpClient.setHTTPProxy(proxyInfo.host, proxyInfo.port.toInteger(), proxyInfo.user, proxyInfo.pass)
+        }
+        else{
+            httpClient.setHTTPProxy(proxyInfo.host, proxyInfo.port.toInteger())
+        }
+    }
+    returnMap = [:]
+    switch (httpVerb){
+        case &#34;GET&#34;:
+            full_url = url + resourcePath + &#34;?&#34; + queryParams.collect{k,v -&#62; &#34;${k}=${URLEncoder.encode(v.toString(), &#34;UTF-8&#34;)}&#34;}.join(&#34;&#38;&#34;)
+            if (debug) {println(&#34;Full url: ${full_url}&#34;)}
+            returnMap[&#39;response&#39;] = httpClient.get(full_url, headers)
+            returnMap[&#39;data&#39;] = new JsonSlurper().parseText(httpClient.getResponseBody())
+            break
+        case &#34;POST&#34;:
+            returnMap[&#39;response&#39;] = httpClient.post(url + resourcePath, payload, headers)
+            break
+        default:
+            println(&#34;httpVerb ${httpVerb} is not supported&#34;)
+            break
+    }
+    returnMap[&#39;code&#39;] = httpClient.getStatusCode()
+    httpClient.close()
+    return returnMap
+}
+
+def lm_log(resourcePath, payload, proxyInfo = null) {
+    //Grab portal account name from the Collector&#39;s config file
+    account = hostProps.get(&#34;lmaccount&#34;)?:Settings.getSetting(Settings.AGENT_COMPANY)
+    accessId = hostProps.get(&#39;lmlogs.winevent.lmaccess.id&#39;)
+    accessKey = hostProps.get(&#39;lmlogs.winevent.lmaccess.key&#39;)
+    url = &#34;https://&#34; + account + &#34;.logicmonitor.com&#34; + &#34;/rest&#34;
+    headers = calcSignature(&#39;POST&#39;,resourcePath,accessKey,accessId,payload)
+    httpClient = HTTP.open(account + &#34;.logicmonitor.com&#34;, 443)
+
+    if (proxyInfo?.enabled) {
+        if(proxyInfo.user &#38;&#38; proxyInfo.pass){
+            httpClient.setHTTPProxy(proxyInfo.host, proxyInfo.port.toInteger(), proxyInfo.user, proxyInfo.pass)
+        }
+        else{
+            httpClient.setHTTPProxy(proxyInfo.host, proxyInfo.port.toInteger())
+        }
+    }
+    response = httpClient.post(url + resourcePath, payload, headers)
+    responseCode = httpClient.getStatusCode()
+    httpClient.close()
+    return responseCode
+}
+
+def calcSignature(verb,resourcePath,accessKey,accessId,data = &#39;&#39;) {
+    epoch = System.currentTimeMillis()
+    requestVars = verb + epoch + data + resourcePath
+    hmac = Mac.getInstance(&#34;HmacSHA256&#34;)
+    secret = new SecretKeySpec(accessKey.getBytes(), &#34;HmacSHA256&#34;)
+    hmac.init(secret)
+    hmac_signed = Hex.encodeHexString(hmac.doFinal(requestVars.getBytes()))
+    signature = hmac_signed.bytes.encodeBase64()
+    headers = [&#34;X-Version&#34;:&#34;3&#34;,&#34;Content-Type&#34;:&#34;application/json&#34;]
+    headers.put(&#34;Authorization&#34; , &#34;LMv1 &#34; + accessId + &#34;:&#34; + signature + &#34;:&#34; + epoch)
+    return headers
+}</value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowsscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxscript</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>windowscmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>linuxcmdline</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>properties</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        <attribute>
+            <name>manualConnections</name>
+            <value></value>
+            <comment></comment>
+        </attribute>
+        </attributes>
+        <datapoints>
+        <datapoint>
+            <name>logs_sent</name>
+            <originId>XLqOZzBmR-Ss4cjDPVoXBA</originId>
+            <dataType>4</dataType>
+            <type>2</type>
+            <postprocessormethod>none</postprocessormethod>
+            <postprocessorparam></postprocessorparam>
+            <usevalue>exitCode</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <maxdigits>4</maxdigits>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        </datapoints>
+        <graphs>
+        </graphs>
+        <overviewgraphs>
+        </overviewgraphs>
+        <scripts>
+        </scripts>
+    </entry>
+</feed>
