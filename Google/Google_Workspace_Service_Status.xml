@@ -7,14 +7,14 @@
   <kmsKeyId></kmsKeyId>
   <pkdsRegion></pkdsRegion>
     <entry type="predatasource">
-        <version>1701446681</version>
+        <version>1701718339</version>
         <name>Google Workspace Service Status</name>
         <displayedas>Google Workspace Service Status</displayedas>
         <description>Returns the number of open incidents per service according to https://www.google.com/appsstatus/dashboard/</description>
         <collector>batchscript</collector>
         <hasMultiInstances>true</hasMultiInstances>
         <useWildValueAsUniqueIdentifier>false</useWildValueAsUniqueIdentifier>
-        <schedule>180</schedule>
+        <schedule>60</schedule>
         <appliesTo>system.displayname == &#34;Google Workspace&#34;</appliesTo>
         <wildcardauto>true</wildcardauto>
         <wildcardpersist>false</wildcardpersist>
@@ -54,22 +54,30 @@ try{
 debug = false
 
 try{
-    jsondata = new URL(&#34;https://www.google.com/appsstatus/dashboard/products.json&#34;).getText()
-    data = new JsonSlurper().parseText(jsondata)
-    if (debug){println(data)}
-    services = data.products.collectEntries{[it.id, [it.title, 0]]}
-    
+    if (debug){
+        jsondata = new URL(&#34;https://www.google.com/appsstatus/dashboard/products.json&#34;).getText()
+        data = new JsonSlurper().parseText(jsondata)
+        println(data)
+        products = data.products.collectEntries{[(it.id):it.title]}
+    }
+    services = [:]
     jsondata = new URL(&#34;https://www.google.com/appsstatus/dashboard/incidents.json&#34;).getText()
     data = new JsonSlurper().parseText(jsondata)
+    if (debug){println(data)}
     data.each{
-        if (it.most_recent_update.status != &#34;AVAILABLE&#34;){
-            if (debug){println(&#34;${services[it.service_key][0]} impacted by inc: https://www.google.com/appsstatus/dashboard/${it.uri}&#34;)}
-            services[it.service_key][1] += 1
+        it.affected_products.each{product-&#62;
+            if (debug) {println(&#34;${products[product.id]} (${product.id}): ${it.most_recent_update.status}&#34;)}
+            if (services.containsKey(product.id)){
+                if (services[product.id].containsKey(it.most_recent_update.status)){
+                    services[product.id][it.most_recent_update.status] += 1
+                } else {services[product.id][it.most_recent_update.status] = 1}
+            } else {services[product.id] = [(it.most_recent_update.status): 1]}
         }
     }
-    services.each{k,v-&#62;
-        if (debug){println(v[0])}
-        println(&#34;${k}.inc_count: ${v[1]}&#34;)
+    services.each{id,statuses-&#62;
+        statuses.each{k,v-&#62;
+            println(&#34;${id}.${k}: ${v}&#34;)
+        }
     }
     return 0
 } catch (Exception e){println(&#34;Error: ${e}&#34;);return 1}</value>
@@ -98,12 +106,41 @@ try{
         </attributes>
         <datapoints>
         <datapoint>
-            <name>inc_count</name>
+            <name>service_disruption</name>
             <originId>2iu9PRAnTvKczpbgxZVnlA</originId>
             <dataType>7</dataType>
             <type>2</type>
             <postprocessormethod>namevalue</postprocessormethod>
-            <postprocessorparam>##WILDVALUE##.inc_count</postprocessorparam>
+            <postprocessorparam>##WILDVALUE##.SERVICE_DISRUPTION</postprocessorparam>
+            <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <maxdigits>4</maxdigits>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>available</name>
+            <originId>MdcpHeNMRjGOeUprgHFsXg</originId>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>namevalue</postprocessormethod>
+            <postprocessorparam>##WILDVALUE##.AVAILABLE</postprocessorparam>
             <usevalue>output</usevalue>
             <alertexpr></alertexpr>
             <alertmissing>1</alertmissing>
@@ -141,7 +178,7 @@ try{
             <graphdatapoints>
         <graphdatapoint>
             <name>inc_count</name>
-            <datapointname>inc_count</datapointname>
+            <datapointname>service_disruption</datapointname>
             <originId></originId>
             <cf>1</cf>
         </graphdatapoint>
@@ -175,7 +212,7 @@ try{
             <datapoints>
         <overviewgraphdatapoint>
             <name>inc_count</name>
-            <datapointname>inc_count</datapointname>
+            <datapointname>service_disruption</datapointname>
             <cf>1</cf>
             <aggregateMethod>sum</aggregateMethod>
             <originId></originId>
