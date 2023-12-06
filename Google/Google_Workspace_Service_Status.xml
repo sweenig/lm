@@ -7,7 +7,7 @@
   <kmsKeyId></kmsKeyId>
   <pkdsRegion></pkdsRegion>
     <entry type="predatasource">
-        <version>1701718339</version>
+        <version>1701878475</version>
         <name>Google Workspace Service Status</name>
         <displayedas>Google Workspace Service Status</displayedas>
         <description>Returns the number of open incidents per service according to https://www.google.com/appsstatus/dashboard/</description>
@@ -106,7 +106,7 @@ try{
         </attributes>
         <datapoints>
         <datapoint>
-            <name>service_disruption</name>
+            <name>service_disruption_raw</name>
             <originId>2iu9PRAnTvKczpbgxZVnlA</originId>
             <dataType>7</dataType>
             <type>2</type>
@@ -135,13 +135,71 @@ try{
             <alertClearTransitionIval>0</alertClearTransitionIval>
         </datapoint>
         <datapoint>
-            <name>available</name>
+            <name>available_raw</name>
             <originId>MdcpHeNMRjGOeUprgHFsXg</originId>
             <dataType>7</dataType>
             <type>2</type>
             <postprocessormethod>namevalue</postprocessormethod>
             <postprocessorparam>##WILDVALUE##.AVAILABLE</postprocessorparam>
             <usevalue>output</usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <maxdigits>4</maxdigits>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>available</name>
+            <originId>5utRp4dZRnahHL7jsxFtxA</originId>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>expression</postprocessormethod>
+            <postprocessorparam>if(un(available_raw),0,available_raw)</postprocessorparam>
+            <usevalue></usevalue>
+            <alertexpr></alertexpr>
+            <alertmissing>1</alertmissing>
+            <alertsubject></alertsubject>
+            <alertbody></alertbody>
+            <enableanomalyalertsuppression></enableanomalyalertsuppression>
+            <adadvsettingenabled>false</adadvsettingenabled>
+            <warnadadvsetting></warnadadvsetting>
+            <erroradadvsetting></erroradadvsetting>
+            <criticaladadvsetting></criticaladadvsetting>
+            <description></description>
+            <maxvalue></maxvalue>
+            <minvalue></minvalue>
+            <maxdigits>4</maxdigits>
+            <userparam1></userparam1>
+            <userparam2></userparam2>
+            <userparam3></userparam3>
+            <iscomposite>false</iscomposite>
+            <rpn></rpn>
+            <alertTransitionIval>0</alertTransitionIval>
+            <alertClearTransitionIval>0</alertClearTransitionIval>
+        </datapoint>
+        <datapoint>
+            <name>service_disruption</name>
+            <originId>SCqWGcLJQDGJKPvByIgMyg</originId>
+            <dataType>7</dataType>
+            <type>2</type>
+            <postprocessormethod>expression</postprocessormethod>
+            <postprocessorparam>if(un(service_disruption_raw),0,service_disruption_raw)</postprocessorparam>
+            <usevalue></usevalue>
             <alertexpr></alertexpr>
             <alertmissing>1</alertmissing>
             <alertsubject></alertsubject>
@@ -178,7 +236,7 @@ try{
             <graphdatapoints>
         <graphdatapoint>
             <name>inc_count</name>
-            <datapointname>service_disruption</datapointname>
+            <datapointname>service_disruption_raw</datapointname>
             <originId></originId>
             <cf>1</cf>
         </graphdatapoint>
@@ -212,7 +270,7 @@ try{
             <datapoints>
         <overviewgraphdatapoint>
             <name>inc_count</name>
-            <datapointname>service_disruption</datapointname>
+            <datapointname>service_disruption_raw</datapointname>
             <cf>1</cf>
             <aggregateMethod>sum</aggregateMethod>
             <originId></originId>
