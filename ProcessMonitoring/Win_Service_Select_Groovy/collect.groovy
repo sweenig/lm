@@ -1,6 +1,8 @@
 import com.santaba.agent.groovyapi.win32.WMI
 
 def host = hostProps.get("system.hostname")
+def include = hostProps.get("Win_Service_Select.includeRegEx") ?: "NOTHING INCLUDED BY DEFAULT"
+def exclude = hostProps.get("Win_Service_Select.excludeRegEx") ?: ".*"
 
 def service_list = WMI.queryAll(host, "select * from win32_Service WHERE STARTMODE = \"AUTO\"")
 
@@ -33,7 +35,10 @@ statusEnum = [
 
 service_list.each{
   wildvalue = it["NAME"].replaceAll(/\=|\:|\\|\#|\s/, '')
-  println("${wildvalue}.state: ${stateEnum.indexOf(it["STATE"])}")
-  println("${wildvalue}.status: ${statusEnum.indexOf(it["STATUS"])}")
+  if ((it["DISPLAYNAME"] ==~ include) && !(it["DISPLAYNAME"] ==~ exclude)){
+    println("${wildvalue}.state: ${stateEnum.indexOf(it["STATE"])}")
+    println("${wildvalue}.status: ${statusEnum.indexOf(it["STATUS"])}")
+    WMI.queryAll(host, "select * from win32_Process where handle = ${it['PROCESSID']}").getAt(0).each{k,v-> println("${wildvalue}.${k}: ${v}")}
+  }
 }
 return(0)
