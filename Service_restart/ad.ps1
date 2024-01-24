@@ -6,24 +6,20 @@ if($username -and $password){
   $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
 }
 $prop = '##Service_restart.services##'
-
 $splitprops = $prop.split(",| ",[System.StringSplitOptions]::RemoveEmptyEntries)
-$processedServices = @{} # Hashtable to store processed services
 
-# Get all services once
+# Get all services once through WMI
 $allServices = Get-WmiObject -Class Win32_Service -ComputerName $hostname -Credential $credential
 
 Foreach ($i in $splitprops){
     Try {
         $services = $allServices | Where-Object { $_.Name -eq $i }
         if (-not $services) {
+            # Get all services through alternative command
             $services = Get-Service -name $i -ComputerName $hostname
         }
         Foreach ($service in $services) {
-            if (-not $processedServices.ContainsKey($service.Name)) { # Check if service name is not in hashtable
-                "$($service.Name)##$($service.DisplayName)##Windows Service-$($service.Name)"
-                $processedServices[$service.Name] = $true # Add service name to hashtable
-            }
+            "$($service.Name)##$($service.DisplayName)##Windows Service: $($service.Name)"
         }
     } Catch {
         Write-Host "Error occurred while processing service '$i': $_"
