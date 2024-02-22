@@ -4,16 +4,18 @@
   <status>200</status>
   <errmsg>OK</errmsg>
   <interval>0</interval>
+  <kmsKeyId></kmsKeyId>
+  <pkdsRegion></pkdsRegion>
     <entry type="predatasource">
-        <version>1691517979</version>
+        <version>1706012208</version>
         <name>Service_restart</name>
-        <displayedas>Services Monitored and Restarted if Needed</displayedas>
+        <displayedas>Services Monitored and Restarted</displayedas>
         <description>restart service if needed. 1=already running, 2=first restart succeeded, 3=second try succeeded, 4=second try failed</description>
         <collector>script</collector>
         <hasMultiInstances>true</hasMultiInstances>
         <useWildValueAsUniqueIdentifier>true</useWildValueAsUniqueIdentifier>
-        <schedule>60</schedule>
-        <appliesTo>isWindows() &#38;&#38; Service_restart.services</appliesTo>
+        <schedule>360</schedule>
+        <appliesTo>isWindows() &#38;&#38; Service_restart.services &#38;&#38; EMS_Managed_Servers()</appliesTo>
         <wildcardauto>true</wildcardauto>
         <wildcardpersist>false</wildcardpersist>
         <wildcardlinuxscript>ad_script</wildcardlinuxscript>
@@ -21,26 +23,46 @@
         <wildcardwinscript>ad_script</wildcardwinscript>
         <wildcardwincmdline>type=&#34;powerShell&#34; </wildcardwincmdline>
         <wildcardgroovyscript>$hostname = &#39;##HOSTNAME##&#39;
+$username = &#39;##wmi.user##&#39;
+$password = &#39;##wmi.pass##&#39;
+if($username -and $password){
+  $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+  $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+}
 $prop = &#39;##Service_restart.services##&#39;
+
 $splitprops = $prop.split(&#34;,| &#34;,[System.StringSplitOptions]::RemoveEmptyEntries)
+$processedServices = @{} # Hashtable to store processed services
+
+# Get all services once
+$allServices = Get-WmiObject -Class Win32_Service -ComputerName $hostname -Credential $credential
+
 Foreach ($i in $splitprops){
-  $service = get-service -name $i -ComputerName $hostname
-  if ($service){
-    &#34;$($service.Name)##$($service.DisplayName)&#34;
-  } else {
-    Write-Host &#34;Service &#39;$i&#39; not found.&#34;
-  }
+    Try {
+        $services = $allServices | Where-Object { $_.Name -eq $i }
+        if (-not $services) {
+            $services = Get-Service -name $i -ComputerName $hostname
+        }
+        Foreach ($service in $services) {
+            if (-not $processedServices.ContainsKey($service.Name)) { # Check if service name is not in hashtable
+                &#34;$($service.Name)##$($service.DisplayName)##Windows Service-$($service.Name)&#34;
+                $processedServices[$service.Name] = $true # Add service name to hashtable
+            }
+        }
+    } Catch {
+        Write-Host &#34;Error occurred while processing service &#39;$i&#39;: $_&#34;
+    }
 }
 exit 0</wildcardgroovyscript>
-        <wildcardschedule>0</wildcardschedule>
+        <wildcardschedule>1440</wildcardschedule>
         <wildcarddisable>false</wildcarddisable>
-        <wildcarddeleteinactive>true</wildcarddeleteinactive>
+        <wildcarddeleteinactive>false</wildcarddeleteinactive>
         <agdmethod>none</agdmethod>
         <agdparams></agdparams>
-        <group>_WeenigWare</group>
+        <group></group>
         <tags>suding</tags>
-        <technology>Written by M. Suding. Updated by S. Weenig</technology>
-        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"$hostname = '##HOSTNAME##'\r\n$prop = '##Service_restart.services##'\r\n$splitprops = $prop.split(\",| \",[System.StringSplitOptions]::RemoveEmptyEntries)\r\nForeach ($i in $splitprops){\r\n  $service = get-service -name $i -ComputerName $hostname\r\n  if ($service){\r\n    \"$($service.Name)##$($service.DisplayName)\"\r\n  } else {\r\n    Write-Host \"Service '$i' not found.\"\r\n  }\r\n}\r\nexit 0"}}]]></adlist>
+        <technology>Written by M. Suding. Updated by S. Weenig. Added WMI statements, wildcard and optimization checks by Jared Meidal</technology>
+        <adlist><![CDATA[{"agdmethod":"none","method":"ad_script","agdparams":"","locatorId":"","id":0,"filters":[],"params":{"type":"powerShell","groovyscript":"$hostname = '##HOSTNAME##'\r\n$username = '##wmi.user##'\r\n$password = '##wmi.pass##'\r\nif($username -and $password){\r\n  $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force\r\n  $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)\r\n}\r\n$prop = '##Service_restart.services##'\r\n\r\n$splitprops = $prop.split(\",| \",[System.StringSplitOptions]::RemoveEmptyEntries)\r\n$processedServices = @{} # Hashtable to store processed services\r\n\r\n# Get all services once\r\n$allServices = Get-WmiObject -Class Win32_Service -ComputerName $hostname -Credential $credential\r\n\r\nForeach ($i in $splitprops){\r\n    Try {\r\n        $services = $allServices | Where-Object { $_.Name -eq $i }\r\n        if (-not $services) {\r\n            $services = Get-Service -name $i -ComputerName $hostname\r\n        }\r\n        Foreach ($service in $services) {\r\n            if (-not $processedServices.ContainsKey($service.Name)) { # Check if service name is not in hashtable\r\n                \"$($service.Name)##$($service.DisplayName)##Windows Service-$($service.Name)\"\r\n                $processedServices[$service.Name] = $true # Add service name to hashtable\r\n            }\r\n        }\r\n    } Catch {\r\n        Write-Host \"Error occurred while processing service '$i': $_\"\r\n    }\r\n}\r\nexit 0"},"version":""}]]></adlist>
         <schemaVersion>2</schemaVersion>
         <dataSourceType>1</dataSourceType>
         <attributes>
@@ -52,42 +74,57 @@ exit 0</wildcardgroovyscript>
         <attribute>
             <name>scriptgroovy</name>
             <value>$hostname = &#34;##HOSTNAME##&#34;
+$username = &#39;##wmi.user##&#39;
+$password = &#39;##wmi.pass##&#39;
+$credential = $null
+if($username -and $password){
+  $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+  $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+}
 $service = &#34;##WILDVALUE##&#34;
-$wait = 5 # seconds to wait
+$wait = 15 # seconds to wait
 
-#Stop-Service -InputObject $(Get-Service -Computer $hostname -Name $service)  # testing only
-#Start-Sleep 4  # testing only
+# Define a function to get service status
+function Get-ServiceStatus($service, $hostname, $credential) {
+  $service_status = (Get-Service -Name $service -ComputerName $hostname -ErrorAction SilentlyContinue).Status
+  if (-not $service_status -and $credential) {
+    $service_status = (Get-WmiObject -Class Win32_Service -Filter &#34;Name=&#39;$service&#39;&#34; -ComputerName $hostname -Credential $credential).State
+  }
+  return $service_status
+}
 
-$service_status = (Get-Service -Name $service -ComputerName $hostname).Status
+# Try to get the service status
+$service_status = Get-ServiceStatus -service $service -hostname $hostname -credential $credential
+
 Write-Host &#34;$service is $service_status on $hostname&#34;
 
-if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running&#34;) {
-  write-host &#34;result_code: 1 (running)&#34;
+if ($service_status -eq &#34;Running&#34;) {
+  Write-Host &#34;result_code: 1 (running)&#34;
 } else {
   Write-Host &#34;not running so i will start then wait $wait seconds and test&#34;
-  Start-Service -InputObject $(Get-Service -Computer $hostname -Name $service)
+  Start-Service -InputObject $(Get-Service -Computer $hostname -Name $service -ErrorAction SilentlyContinue)
   Start-Sleep $wait
 
-  #Stop-Service -InputObject $(Get-Service -Computer $hostname -Name $service) # testing only
-  #Start-Sleep 4 # testing only
+  # Check the service status again
+  $service_status = Get-ServiceStatus -service $service -hostname $hostname -credential $credential
 
-  if ((get-service -name $service -ComputerName $hostname).Status  -eq &#34;Running&#34;) {
-        write-host &#34;result_code: 2 (first restart worked)&#34;
+  if ($service_status -eq &#34;Running&#34;) {
+    Write-Host &#34;result_code: 2 (first restart worked)&#34;
+  } else {
+    Write-Host &#34;first restart failed so i will start second time&#34;
+    Start-Service -InputObject $(Get-Service -Computer $hostname -Name $service -ErrorAction SilentlyContinue)
+    Start-Sleep $wait
+
+    # Check the service status again
+    $service_status = Get-ServiceStatus -service $service -hostname $hostname -credential $credential
+
+    if ($service_status -eq &#34;Running&#34;) {
+      Write-Host &#34;result_code: 3 (second restart worked)&#34;
     } else {
-        Write-Host &#34;first restart failed so i will start second time&#34;
-        Start-Service -InputObject $(Get-Service -Computer $hostname -Name $service)
-        Start-Sleep $wait
-
-        #Stop-Service -InputObject $(Get-Service -Computer $hostname -Name $service) # testing only
-        #Start-Sleep 3 # testing only
-
-        if ((get-service -name $service -ComputerName $hostname).Status  -eq &#34;Running&#34;) {
-            Write-Host &#34;result_code: 3 (second restart worked)&#34;
-        } else {
-            Write-Host &#34;result_code: 4 (second restart failed so probably trigger alert)&#34;
-        } # end of else line 21
-    } # end of else line 15
-} # end of line 9</value>
+      Write-Host &#34;result_code: 4 (second restart failed so probably trigger alert)&#34;
+    }
+  }
+}</value>
             <comment></comment>
         </attribute>
         <attribute>
@@ -130,16 +167,21 @@ if ((get-service -name $service -ComputerName $hostname).Status -eq &#34;Running
             <postprocessormethod>regex</postprocessormethod>
             <postprocessorparam>result_code: (\d+)</postprocessorparam>
             <usevalue>output</usevalue>
-            <alertexpr>&#62;= 4 4</alertexpr>
+            <alertexpr>&#62;= 2 4</alertexpr>
             <alertmissing>3</alertmissing>
-            <alertsubject></alertsubject>
-            <alertbody></alertbody>
+            <alertsubject>Windows ##DSIDESCRIPTION## has failed to restart on ##HOST##</alertsubject>
+            <alertbody>The Windows service ##INSTANCE## ##DSIDESCRIPTION## on host ##HOST## is now failing, the resource into ##LEVEL## level, as of ##START##.
+
+This state has existed for ##DURATION##. Result codes are:
+1=ok, 2=first restart worked, 3=second worked, 4=second failed
+
+Emerge SOP: https://emerge.itglue.com/3247188/docs/14876583</alertbody>
             <enableanomalyalertsuppression></enableanomalyalertsuppression>
             <adadvsettingenabled>false</adadvsettingenabled>
             <warnadadvsetting></warnadadvsetting>
             <erroradadvsetting></erroradadvsetting>
             <criticaladadvsetting></criticaladadvsetting>
-            <description>1=ok, 2=first restart worked, 3=second worked, 4=second failed so probably alert</description>
+            <description>1=ok, 2=first restart worked, 3=second worked, 4=second failed</description>
             <maxvalue></maxvalue>
             <minvalue></minvalue>
             <maxdigits>4</maxdigits>
