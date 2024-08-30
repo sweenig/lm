@@ -1,0 +1,378 @@
+{
+  "collectionMethod": "script",
+  "datapoints": [
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Time remaining, in days, until the certificate expires.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "##WILDVALUE##.DaysRemaining",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "sExQBukORJuSayzag-PP_Q",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is expiring in ##VALUE## days, placing the certificate into ##LEVEL## state.\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "DaysRemaining",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "1  : The certificate appears to be self issued.\n0  : The certificate does not have this issue.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "##WILDVALUE##.SelfIssued",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "qGKz6maVQgS-FWQkMPzfFg",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is failing SSL security checks due to a self issued certificate. \n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "SelfIssuedCertificate",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "1  : The certificate appears to be self signed.\n0  : The certificate does not have this issue.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "##WILDVALUE##.SelfSigned",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "NJVxVxGFS-GLZzcRDwtrPQ",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is failing SSL security checks due to a self signed certificate. \n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "SelfSignedCertificate",
+      "noData": "Do not trigger an alert"
+    }
+  ],
+  "searchKeywords": "security,certificates,networking,ssl",
+  "displayedAs": "SSL Certificate Chains Custom",
+  "description": "Monitors SSL chains across ports listed in custom.ssl_listening_ports",
+  "appliesTo": "custom.ssl_listening_ports",
+  "activeDiscovery": {
+    "groupExpr": "auto.Certificate.PortName",
+    "deleteInactiveInstances": false,
+    "groupMethod": "ilp",
+    "discoveryMethod": "ad_script",
+    "autoDeleteInstances": false,
+    "disableDiscoveredInstances": false,
+    "filters": [],
+    "params": {
+      "type": "groovy",
+      "content": "/*******************************************************************************\n *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.\n ******************************************************************************/\nimport javax.net.ssl.SSLContext\nimport javax.net.ssl.TrustManager\nimport javax.net.ssl.X509TrustManager\nimport java.security.Security\nimport java.security.cert.CertificateException\nimport java.security.cert.X509Certificate\nimport org.apache.commons.codec.digest.DigestUtils\n\n// To run in debug mode, set to true\nBoolean debug = false\n\ndef host = hostProps.get(\"system.hostname\")\ndef ips = hostProps.get(\"system.ips\") ? hostProps.get(\"system.ips\").split(\",\") : []\n\nlist = hostProps.get(\"custom.ssl_listening_ports\") ?: \"\"\nportNames = [:]\nlist.tokenize(\",\").each{inst->\n    portNames[inst.tokenize(\"|\")[0]] = inst.tokenize(\"|\")[1]\n}\n\n//def propertyPorts = hostProps.get(\"auto.network.listening_ssl_ports\")?.split(',') ?: []\npropertyPorts = portNames.keySet()\n\ndef timeout = 1000\n\ndef modLoader = new GroovyShell(getBinding()).parse(com.logicmonitor.mod.Snippets.getLoader())\ndef lmEmit = modLoader.load(\"lm.emit\", \"0\")   // Load LM emit module\n\nLMDebugPrint(\"- DEBUG MODE ON -\\n\\tHost: ${host}\\n\\tPorts: ${propertyPorts.join(\", \")}\", debug)\n\n\ndef certificates = []\n\n// We store the socket factory so it can be reused.\ndef sslSocketFac\n\n// Before we load certs, we specify these properies to prevent some auth types.\nSystem.setProperty(  \"jdk.tls.disabledAlgorithms\", \"SSLv3, DH keySize < 768\")\nSecurity.setProperty(\"jdk.tls.disabledAlgorithms\", \"SSLv3, DH keySize < 768\")\n\nif (propertyPorts) {\n\tpropertyPorts.each{ port->\n        if (!loadCerts(host, port, sslSocketFac, certificates, timeout, debug)) {\n            // Something has gone wrong. Try the IP instead of the hostname.\n            ips.any{ ip ->\n                LMDebugPrint(\"Attempting fallback with IP - ${ip}\", debug)\n                if (loadCerts(ip, port, sslSocketFac, certificates, timeout, debug)) {\n                    // If we get a successful run, don't process the other IP\n                    return true\n                }\n            }\n        }\n\n        // Create instances from certificates found\n        if (certificates) {\n            processCerts(certificates, port, portNames, lmEmit)\n        }\n\t}\n}\nelse {\n    println \"No SSL ports detected in Device_BasicInfo PropertySource. Nothing to monitor.\"\n    return 1\n}\n\nreturn 0\n\n\n/**\n * Helper function to print out debug messages for troubleshooting purposes.\n */\nvoid LMDebugPrint(message, Boolean debug=false) {\n    if (debug) {\n        println(message.toString())\n    }\n}\n\n\n/**\n * Process the certificate info for specified port and emit instance data.\n */\nvoid processCerts(certificates, port, portNames, lmEmit) {\n    def now = Calendar.getInstance().getTime()\n\n    // Get the current time and add 10 years as a base expiry time\n    def time = Calendar.getInstance()\n    time.add(1, 10)\n\n    def expire = time.getTime()\n\n    // Get epoch time to use as a base issue time.\n    time.setTimeInMillis(0)\n    issue = time.getTime()\n\n    certificates.eachWithIndex { cert, index ->\n        def thumbprint = DigestUtils.sha1Hex(cert.getEncoded()).toUpperCase()\n        def wildvalue = \"${port}-${thumbprint}\"\n        def wildalias = \"[${index}] <${cert.getType()}> ${thumbprint} - ${port}\"\n        def ilps = [\n            \"Certificate.Port\"       : port,\n            \"Certificate.PortName\"   : portNames[port.toInteger()] ?: 'Unknown',\n            \"Certificate.Index\"      : index,\n            \"Certificate.Type\"       : cert.getType(),\n            \"Certificate.SubjectDN\"  : URLEncoder.encode(cert.getSubjectDN().toString()),\n            \"Certificate.IssuerDN\"   : URLEncoder.encode(cert.getIssuerDN().toString()),\n            \"Certificate.ValidFrom\"  : cert.getNotBefore(),\n            \"Certificate.ValidUntil\" : cert.getNotAfter(),\n            \"Certificate.Thumbprint\" : thumbprint,\n        ]\n\n        lmEmit.instance(wildvalue, wildalias, \"Subject:${cert.getSubjectDN()}\", ilps)\n    }\n}\n\n\n/**\n * This custom trust manager class allows all certificates, but extracts them as it does so.\n */\nclass LMEmptyX509TrustManager implements TrustManager, X509TrustManager {\n\tprivate def managerLog\n\tprivate def globalCerts\n\n\tprivate LMEmptyX509TrustManager(_managerLog, _globalCerts) {\n\t\tmanagerLog = _managerLog\n\t\tglobalCerts = _globalCerts\n\t}\n\n\t// Define all X509TrustManager functions to not fail validation on expire.\n\t@Override\n\tX509Certificate[] getAcceptedIssuers() {\n\t\tmanagerLog.push(\"\\tTrustManager: getAcceptedIssuers called.\")\n        X509Certificate[] emptyList = []\n\n\t\treturn emptyList\n\t}\n\n\t@Override\n\tvoid checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {\n\t\tmanagerLog.push(\"\\tTrustManager: checkServerTrusted got ${(certs == null ? 0 : certs.length)} certs. Auth type: ${authType}\")\n\n\t\t// Instead of checking if the cert is trusted...save it to our global storage!\n\t\tif (certs) {\n\t\t\tglobalCerts.clear()\n\t\t\tglobalCerts.addAll(certs)\n\t\t}\n\t}\n\n\t@Override\n\tvoid checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {\n\t\tmanagerLog.push(\"\\tTrustManager: checkClientTrusted got ${(certs == null ? 0 : certs.length)} certs. Auth type: ${authType}\")\n\t}\n}\n\n\n/**\n * Gather certificates from a host and port, and put them into global storage.\n */\ndef loadCerts(host, port, sslSocketFactory, certificates, timeout, debug=false, log=[]) {\n\tdef sslSock = null\n    def success = false\n\n\t// Writing to sockets has a chance of failure, so lets try/catch.\n\ttry {\n        // Create a socket factory - if it doesn't already exist - using custom trust manager to trust all certs\n\t\tif (sslSocketFactory == null) {\n\t\t\tdef trustManager = new LMEmptyX509TrustManager(log, certificates)\n\n\t\t\t// In the case of TLSv1.2, we want to use our custom trust manager\n\t\t\tdef context = SSLContext.getInstance(\"TLSv1.2\")\n\t\t\tcontext.init(null, [trustManager] as TrustManager[], null)\n\n\t\t\tsslSocketFactory = context.getSocketFactory()\n\t\t}\n\n\t\tdef sock = new Socket()\n\t\tsock.connect(new InetSocketAddress(host, port.toInteger()), timeout)\n\t\tsslSock = sslSocketFactory.createSocket(sock, host, port.toInteger(), true)\n\n\t\t// Specify some common ciphers and enable them on our SSL socket\n\t\tdef ciphers = new HashSet<String>()\n\t\tciphers.addAll(Arrays.asList(sslSock.getEnabledCipherSuites()))\n\t\tciphers.add(\"SSL_RSA_WITH_RC4_128_SHA\")\n\t\tciphers.add(\"SSL_RSA_WITH_RC4_128_MD5\")\n\t\tsslSock.setEnabledCipherSuites(ciphers.toArray(new String[ciphers.size()]))\n\n\t\t// Make a request to send. The text doesnt seem to matter as we don't care about the response.\n\t\tdef request = \"GET / HTTP/1.1\\r\\nHost:${host}:${port}\\r\\nConnection:Close\\r\\nUser-Agent:SSLClient/1.0\\r\\n\\r\\n\"\n\n\t\t// Create a writer we will use to send our request.\n\t\tdef writer = new OutputStreamWriter(sslSock.getOutputStream(), \"utf-8\")\n\t\tLMDebugPrint(\"\\nTry to send request to server...\", debug)\n\n\t\t// Write the request to the output stream.\n\t\twriter.write(request)\n\t\tLMDebugPrint(\"\\tRequest sent...\", debug)\n\n\t\t// Make sure the output stream has consumed our request.\n\t\twriter.flush()\n\t\tLMDebugPrint(\"\\tRequest flushed...\\n\\tSUCCESS\", debug)\n\n        success = true\n\t}\n\tcatch (Exception e) {\n\t\t// Something went wrong! Will be investigated later in the script.\n\t\tLMDebugPrint(\"\\tSocket Error: ${e}\", debug)\n\t}\n\n\t// If the ssl sock isn't closed already, we need to do it!\n\tif (sslSock != null) {\n\t\tsslSock.close()\n\t}\n\n    // Print log info from trust manager class\n    if (debug && log) {\n        println \"\\n${log.join('\\n')}\"\n    }\n\n\treturn success\n}"
+    },
+    "discoveryInterval": "60m",
+    "enabled": true
+  },
+  "collectionAttrs": {
+    "type": "groovy",
+    "content": "/*******************************************************************************\n *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.\n ******************************************************************************/\nimport javax.net.ssl.SSLContext\nimport javax.net.ssl.TrustManager\nimport javax.net.ssl.X509TrustManager\nimport java.security.Security\nimport java.security.cert.CertificateException\nimport java.security.cert.X509Certificate\nimport org.apache.commons.codec.digest.DigestUtils\n\n// To run in debug mode, set to true\nBoolean debug = false\n\ndef host = hostProps.get(\"system.hostname\")\ndef ips = hostProps.get(\"system.ips\") ? hostProps.get(\"system.ips\").split(\",\") : []\ndef timeout = 10000\n\n// Collect data for all certificates for this instance port\ndef port = instanceProps.get(\"auto.certificate.port\")\n\ndef modLoader = new GroovyShell(getBinding()).parse(com.logicmonitor.mod.Snippets.getLoader())\ndef lmEmit = modLoader.load(\"lm.emit\", \"0\")   // Load LM emit module\n\nLMDebugPrint(\"- DEBUG MODE ON -\\n\\tHost: ${host}\\n\\tPort: ${port}\", debug)\n\ndef certificates = []\n\n// We store the socket factory so it can be reused.\ndef sslSocketFac\n\n// Before we run the above, we specify these properies to prevent some auth types.\nSystem.setProperty(  \"jdk.tls.disabledAlgorithms\", \"SSLv3, DH keySize < 768\")\nSecurity.setProperty(\"jdk.tls.disabledAlgorithms\", \"SSLv3, DH keySize < 768\")\n\nif (!loadCerts(host, port, sslSocketFac, certificates, timeout, debug)) {\n    // Something has gone wrong. Try the IP instead of the hostname.\n    ips.any{ ip ->\n        if (loadCerts(ip, port, sslSocketFac, certificates, timeout, debug)) {\n            // If we get a successful run, don't process the other IP\n            return true\n        }\n    }\n}\n\nLMDebugPrint(\"\", debug) // Empty line to space debug messages from standard script output\n\nif (certificates) {\n    // Get the current time and add 10 years as a base expiry time\n    def now = Calendar.getInstance().getTime()\n    def time = Calendar.getInstance()\n    time.add(1, 10)\n    def expire = time.getTime()\n\n    // Get epoch time to use as a base issue time\n    time.setTimeInMillis(0)\n    issue = time.getTime()\n\n    certificates.eachWithIndex{ cert, index ->\n        def thumbprint = DigestUtils.sha1Hex(cert.getEncoded()).toUpperCase()\n        def wild = \"${port}-${thumbprint}\"\n        \n        lmEmit.dp(wild, \"SelfIssued\", cert.isSelfIssued(cert) ? 1 : 0)\n        lmEmit.dp(wild, \"SelfSigned\", cert.isSelfSigned(cert, null) ? 1 : 0)\n        lmEmit.dp(wild, \"DaysRemaining\", ((cert.getNotAfter().getTime() - now.getTime()) / 1000 / 60 / 60 / 24))\n    }\n}\n\nreturn 0\n\n\n/**\n * Helper function to print out debug messages for troubleshooting purposes.\n */\nvoid LMDebugPrint(message, Boolean debug=false) {\n    if (debug) {\n        println(message.toString())\n    }\n}\n\n\n/**\n * This custom trust manager class allows all certificates, but extracts them as it does so.\n */\nclass LMEmptyX509TrustManager implements TrustManager, X509TrustManager {\n\tprivate def managerLog\n\tprivate def globalCerts\n\n\tprivate LMEmptyX509TrustManager(_managerLog, _globalCerts) {\n\t\tmanagerLog = _managerLog\n\t\tglobalCerts = _globalCerts\n\t}\n\n\t// Define all X509TrustManager functions to not fail validation on expire.\n\t@Override\n\tX509Certificate[] getAcceptedIssuers() {\n\t\tmanagerLog.push(\"\\tTrustManager: getAcceptedIssuers called.\")\n        X509Certificate[] emptyList = []\n\n\t\treturn emptyList\n\t}\n\n\t@Override\n\tvoid checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {\n\t\tmanagerLog.push(\"\\tTrustManager: checkServerTrusted got ${(certs == null ? 0 : certs.length)} certs. Auth type: ${authType}\")\n\n\t\t// Instead of checking if the cert is trusted...save it to our global storage!\n\t\tif (certs) {\n\t\t\tglobalCerts.clear()\n\t\t\tglobalCerts.addAll(certs)\n\t\t}\n\t}\n\n\t@Override\n\tvoid checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {\n\t\tmanagerLog.push(\"\\tTrustManager: checkClientTrusted got ${(certs == null ? 0 : certs.length)} certs. Auth type: ${authType}\")\n\t}\n}\n\n\n/**\n * Gather certificates from a host and port, and put them into global storage.\n */\ndef loadCerts(host, port, sslSocketFactory, certificates, timeout, debug=false, log=[]) {\n\tdef sslSock = null\n    def success = false\n\n\t// Writing to sockets has a chance of failure, so lets try/catch.\n\ttry {\n        // Create a socket factory - if it doesn't already exist - using custom trust manager to trust all certs\n\t\tif (sslSocketFactory == null) {\n\t\t\tdef trustManager = new LMEmptyX509TrustManager(log, certificates)\n\n\t\t\t// In the case of TLSv1.2, we want to use our custom trust manager\n\t\t\tdef context = SSLContext.getInstance(\"TLSv1.2\")\n\t\t\tcontext.init(null, [trustManager] as TrustManager[], null)\n\n\t\t\tsslSocketFactory = context.getSocketFactory()\n\t\t}\n\n\t\tdef sock = new Socket()\n\t\tsock.connect(new InetSocketAddress(host, port.toInteger()), timeout)\n\t\tsslSock = sslSocketFactory.createSocket(sock, host, port.toInteger(), true)\n\n\t\t// Specify some common ciphers and enable them on our SSL socket\n\t\tdef ciphers = new HashSet<String>()\n\t\tciphers.addAll(Arrays.asList(sslSock.getEnabledCipherSuites()))\n\t\tciphers.add(\"SSL_RSA_WITH_RC4_128_SHA\")\n\t\tciphers.add(\"SSL_RSA_WITH_RC4_128_MD5\")\n\t\tsslSock.setEnabledCipherSuites(ciphers.toArray(new String[ciphers.size()]))\n\n\t\t// Make a request to send. The text doesnt seem to matter as we don't care about the response.\n\t\tdef request = \"GET / HTTP/1.1\\r\\nHost:${host}:${port}\\r\\nConnection:Close\\r\\nUser-Agent:SSLClient/1.0\\r\\n\\r\\n\"\n\n\t\t// Create a writer we will use to send our request.\n\t\tdef writer = new OutputStreamWriter(sslSock.getOutputStream(), \"utf-8\")\n\t\tLMDebugPrint(\"\\nTry to send request to server...\", debug)\n\n\t\t// Write the request to the output stream.\n\t\twriter.write(request)\n\t\tLMDebugPrint(\"\\tRequest sent...\", debug)\n\n\t\t// Make sure the output stream has consumed our request.\n\t\twriter.flush()\n\t\tLMDebugPrint(\"\\tRequest flushed...\\n\\tSUCCESS\", debug)\n\n        success = true\n\t}\n\tcatch (Exception e) {\n\t\t// Something went wrong! Will be investigated later in the script.\n\t\tLMDebugPrint(\"\\tSocket Error: ${e}\", debug)\n\t}\n\n\t// If the ssl sock isn't closed already, we need to do it!\n\tif (sslSock != null) {\n\t\tsslSock.close()\n\t}\n\n    // Print log info from trust manager class\n    if (debug && log) {\n        println \"\\n${log.join('\\n')}\"\n    }\n\n\treturn success\n}"
+  },
+  "type": 0,
+  "technicalNotes": "Performs port scan during Active Discovery.\ncustom.ssl_listening_ports should have this syntax:\n80|HTTP,443|HTTPS,445|CMS Web Admin",
+  "useWildValueAsUniqueIdentifier": false,
+  "version": 1660332519,
+  "registryMetadata": {
+    "currentUuid": "tbV9A8DJQzGwxEtlwfe8_A",
+    "originalUuid": "tbV9A8DJQzGwxEtlwfe8_A",
+    "locatorId": "",
+    "authorCompanyUuid": "e4148cb8-5f4f-4498-992c-80d594f0f60d",
+    "registryVersion": "1.0.0",
+    "checksum": "03a5c9fe27ecf21a3ad54b3b0c2bbf62",
+    "namespace": "",
+    "registryId": ""
+  },
+  "multiInstance": true,
+  "graphs": [
+    {
+      "datapoints": [
+        {
+          "datapointName": "DaysRemaining",
+          "consolidationFn": "average",
+          "name": "DaysRemaining"
+        },
+        {
+          "datapointName": "SelfIssuedCertificate",
+          "consolidationFn": "average",
+          "name": "SelfIssuedCertificate"
+        },
+        {
+          "datapointName": "SelfSignedCertificate",
+          "consolidationFn": "average",
+          "name": "SelfSignedCertificate"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "max": 1,
+      "name": "Certificate Issues",
+      "verticalLabel": "0=ok, 1=error",
+      "displayPriority": 2,
+      "scale1024": false,
+      "virtualDatapoints": [
+        {
+          "name": "Expired",
+          "expr": "if(le(DaysRemaining,0),1, unkn())"
+        },
+        {
+          "name": "SelfIssuedCertificateClean",
+          "expr": "if(eq(SelfIssuedCertificate,1),SelfIssuedCertificate,unkn())"
+        },
+        {
+          "name": "SelfSignedCertificateClean",
+          "expr": "if(eq(SelfSignedCertificate,1),SelfSignedCertificate,unkn())"
+        }
+      ],
+      "title": "Certificate Issues",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "Expired",
+          "color": "red",
+          "legend": "Expired",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "SelfIssuedCertificateClean",
+          "color": "navy",
+          "legend": "Self Issued",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "SelfSignedCertificateClean",
+          "color": "fuchsia",
+          "legend": "Self Signed",
+          "isVirtual": true,
+          "type": "area"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "DaysRemaining",
+          "consolidationFn": "average",
+          "name": "DaysRemaining"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "name": "Expiry Time",
+      "verticalLabel": "days",
+      "displayPriority": 1,
+      "scale1024": false,
+      "virtualDatapoints": [
+        {
+          "name": "Remaining",
+          "expr": "if(ge(DaysRemaining,0), DaysRemaining, unkn())"
+        },
+        {
+          "name": "Expired",
+          "expr": "if(ge(DaysRemaining,0), unkn(), 0-DaysRemaining)"
+        }
+      ],
+      "title": "Expiry Time",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "Expired",
+          "color": "red",
+          "legend": "Expired",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "Remaining",
+          "color": "olive",
+          "legend": "Remaining",
+          "isVirtual": true,
+          "type": "area"
+        }
+      ]
+    }
+  ],
+  "name": "SSL_Certificate_Chains_Custom",
+  "collectionInterval": "30m",
+  "dataSourceType": 1,
+  "group": "",
+  "overviewGraphs": [
+    {
+      "datapoints": [
+        {
+          "datapointName": "DaysRemaining",
+          "aggregateMethod": "sum",
+          "consolidationFn": "average",
+          "name": "DaysRemaining"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "name": "Days Remaining Until Certificate Expiry",
+      "verticalLabel": "days",
+      "displayPriority": 2,
+      "aggregated": false,
+      "scale1024": false,
+      "virtualDatapoints": [
+        {
+          "name": "Remaining",
+          "expr": "if(ge(DaysRemaining,0), DaysRemaining, unkn())"
+        }
+      ],
+      "title": "Days Remaining Until Certificate Expiry",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "DaysRemaining",
+          "color": "silver",
+          "legend": "##INSTANCE##",
+          "isVirtual": false,
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "DaysRemaining",
+          "aggregateMethod": "sum",
+          "consolidationFn": "average",
+          "name": "DaysRemaining"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "name": "Days Since Certificate Expired",
+      "verticalLabel": "days",
+      "displayPriority": 3,
+      "aggregated": false,
+      "scale1024": false,
+      "virtualDatapoints": [
+        {
+          "name": "Expired",
+          "expr": "if(ge(DaysRemaining,0), unkn(), 0-DaysRemaining)"
+        }
+      ],
+      "title": "Days Since Certificate Expired",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "Expired",
+          "color": "silver",
+          "legend": "##INSTANCE##",
+          "isVirtual": true,
+          "type": "line"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "DaysRemaining",
+          "aggregateMethod": "min",
+          "consolidationFn": "average",
+          "name": "DaysRemaining"
+        }
+      ],
+      "timeScale": "1day",
+      "max": 1,
+      "displayPriority": 1,
+      "aggregated": true,
+      "scale1024": false,
+      "title": "Expiry State",
+      "min": 0,
+      "name": "Expiry State",
+      "verticalLabel": "0=false, 1=true",
+      "virtualDatapoints": [
+        {
+          "name": "Expired",
+          "expr": "if(lt(DaysRemaining, 0), 1, unkn())"
+        },
+        {
+          "name": "Valid",
+          "expr": "if(ge(DaysRemaining, 0), 1, unkn())"
+        }
+      ],
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "Expired",
+          "color": "red",
+          "legend": "Expired Chain",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "Valid",
+          "color": "olive",
+          "legend": "Valid Chain",
+          "isVirtual": true,
+          "type": "area"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "SelfIssuedCertificate",
+          "aggregateMethod": "max",
+          "consolidationFn": "max",
+          "name": "SelfIssuedCertificate"
+        },
+        {
+          "datapointName": "SelfSignedCertificate",
+          "aggregateMethod": "max",
+          "consolidationFn": "max",
+          "name": "SelfSignedCertificate"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "max": 1,
+      "name": "Other Certificate Issues",
+      "verticalLabel": "0=ok, 1=error",
+      "displayPriority": 4,
+      "aggregated": true,
+      "scale1024": false,
+      "title": "Other Certificate Issues",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "SelfIssuedCertificate",
+          "color": "navy",
+          "legend": "Self Issued",
+          "isVirtual": false,
+          "type": "area"
+        },
+        {
+          "datapointName": "SelfSignedCertificate",
+          "color": "fuchsia",
+          "legend": "Self Signed",
+          "isVirtual": false,
+          "type": "area"
+        }
+      ]
+    }
+  ],
+  "headers": {
+    "cache-control": "no-cache, no-store",
+    "content-disposition": "attachment; filename=\"SSL_Certificate_Chains_Custom.json\"",
+    "content-encoding": "gzip",
+    "content-type": "application/json",
+    "date": "Fri, 30 Aug 2024 22:19:50 GMT",
+    "server": "LM",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "vary": "accept-encoding",
+    "x-content-type-options": "nosniff",
+    "x-server-version": "209-7"
+  }
+}

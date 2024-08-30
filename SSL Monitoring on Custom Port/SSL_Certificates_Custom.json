@@ -1,0 +1,568 @@
+{
+  "collectionMethod": "script",
+  "datapoints": [
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Reports the DaysRemaining metric if the certificate isn't self signed.\nUse this datapoint to alert in circumstances where you aren't interested in the expiry status of self signed certificates.",
+      "interpretMethod": "expression",
+      "interpretExpr": "if(eq(SelfSignedCertificate,1),unkn(),DaysRemaining)",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "r28nUnsATaWV5Li3I0keNA",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is not self signed and will be expiring in ##VALUE## days, placing the certificate into ##LEVEL## state.\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "Alerting_DaysRemainingIfNotSelfSigned",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Reports the DaysRemaining metric if the certificate is self signed.\nUse this datapoint to alert in circumstances where you aren't interested in the expiry status of certificates that aren't self signed.",
+      "interpretMethod": "expression",
+      "interpretExpr": "if(eq(SelfSignedCertificate,1),DaysRemaining,unkn())",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "B7ym8MbUTTa4eeWS8kPdeA",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is self signed and will be expiring in ##VALUE## days, placing the certificate into ##LEVEL## state.\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "Alerting_DaysRemainingIfSelfSigned",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Number of certificates in the SSL chain.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "ChainLength",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "mDkO-KT9QIO6RNRRGvg11A",
+      "useValue": "output",
+      "min": "",
+      "name": "ChainLength",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for connection reset exception.\n\n1=The certificate has failed due to a connection reset. This is commonly due to a security or configuration issue such as a firewall and doesn't necessarily mean the certificate is invalid.\n0=The certificate does not have this issue.\n-1=An issue was not reported, but could still exist if other issues are obscuring it.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "ConnectionReset",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "OMof2xKMQY6nHWt5onrwVg",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is failing standard SSL security checks, placing the certificate into ##LEVEL## state.\n\nThis error is commonly due to a security or configuration issue such as a firewall.\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "ConnectionReset",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Time remaining until the certificate expires, in days.",
+      "interpretMethod": "namevalue",
+      "threshold": "< 28 7 2",
+      "interpretExpr": "TimeRemaining",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "uIwIcp28S8C0IZ2mAw-ndQ",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is expiring in ##VALUE## days, placing the certificate into ##LEVEL## state.\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "DaysRemaining",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for hostname mismatch exception.\n\n1=The certificate failed host name validation checks.\n0=The certificate does not have this issue.\n-1=An issue was not reported, but could still exist if other issues are obscuring it.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "HostNameMismatch",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "4u8r1QqxR8WMPdTr_z8C9g",
+      "useValue": "output",
+      "min": "",
+      "name": "HostNameMismatch",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for invalid certification path exception.\n\n1=The certification path is invalid (Untrusted Root etc).\n0=The certificate does not have this issue.\n-1=An issue was not reported, but could still exist if other issues are obscuring it.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "InvalidCertificationPath",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "8O1wSbMSSr6QqxSQSDa9Xg",
+      "useValue": "output",
+      "min": "",
+      "name": "InvalidCertificationPath",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for whether an unknown exception occurred.\n\n1=The certificate has failed validation without enough information to accurately report the issue. See the debug output for details.\n0=The certificate does not have any unknown issues.\n-1=An issue was not reported, but could still exist if other issues are obscuring it.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "OtherException",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "mx9QFKUPS6S7sNFUagD7nw",
+      "useValue": "output",
+      "min": "",
+      "name": "OtherException",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for self issued certificates.\n\n1=The certificate appears to be self issued.\n0=The certificate does not have this issue.\n-1=An issue was not reported, but could still exist if other issues are obscuring it.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "SelfIssuedCertificate",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "GDDj86s1TWm7b-V41KBbgQ",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is failing SSL security checks due to a self issued certificate, placing the certificate into ##LEVEL## state. \n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "SelfIssuedCertificate",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for self signed certificates.\n\n1=The certificate appears to be self signed.\n0=The certificate does not have this issue.\n-1=An issue was not reported, but could still exist if other issues are obscuring it.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "SelfSignedCertificate",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "gxfSjfxVQQekoWHqeOlK5Q",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is failing SSL security checks due to a self signed certificate, placing the certificate into ##LEVEL## state. \n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "SelfSignedCertificate",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for timestamp check exception.\n\n1=The timestamp is invalid (expired or otherwise).\n0=The certificate does not have this issue.\n-1=An issue was not reported, but could still exist if other issues are obscuring it.",
+      "interpretMethod": "namevalue",
+      "threshold": "> 0",
+      "interpretExpr": "TimestampCheckFailed",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "WgmidO_qTg-IgDF_V9FqOg",
+      "useValue": "output",
+      "min": "",
+      "alertBody": "##INSTANCE## Certificate on ##HOST## is failing SSL security checks due to an invalid timestamp, placing the certificate into ##LEVEL## state. \n\nThis error is commonly associated with certificate expiry.\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "TimestampCheckFailed",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for whether hostname or IP was used.\n\n1=The hostname was unknown so we had to fallback to using one of the device ips.\n0=The hostname was known.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "UnknownHostIPFallback",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "I1gf5T_ERKGbpIxjobrtrg",
+      "useValue": "output",
+      "min": "",
+      "name": "UnknownHostIPFallback",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator for unrecognized name exception.\n\n1=The certificate failed with an unrecognized name during the handshake. The host IP was used as an alternative in an attempt to still get expiry stats.\n0=The certificate does not have this issue.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "UnrecognizedName",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "CeMkGb32RGC_n8krFkQ4Vg",
+      "useValue": "output",
+      "min": "",
+      "name": "UnrecognisedName",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Indicator whether certificate is valid.\n\n1=Certificates passed all validation.\n0=Issue discovered during validation.",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "Valid",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "vVpl9zanQO-wY-yCk0Gj-A",
+      "useValue": "output",
+      "min": "",
+      "name": "Valid",
+      "noData": "Do not trigger an alert"
+    }
+  ],
+  "searchKeywords": "security,certificates,networking,ssl",
+  "displayedAs": "SSL Certificates Custom",
+  "description": "Monitors SSL validity information across ports specified in the property custom.ssl_listening_ports",
+  "appliesTo": "custom.ssl_listening_ports",
+  "activeDiscovery": {
+    "deleteInactiveInstances": false,
+    "groupMethod": "none",
+    "discoveryMethod": "ad_script",
+    "autoDeleteInstances": false,
+    "disableDiscoveredInstances": false,
+    "filters": [],
+    "params": {
+      "type": "groovy",
+      "content": "def host = hostProps.get(\"system.hostname\")\ndef timeout = 1000\n\nlist = hostProps.get(\"custom.ssl_listening_ports\") ?: \"\"\n\ninstances = [:]\n\nlist.tokenize(\",\").each{inst->\n    instances[inst.tokenize(\"|\")[0]] = inst.tokenize(\"|\")[1]\n}\n\ninstances.each{ port, name ->\n\ttry {\n\t\tdef socket = new Socket()\n\t\tsocket.connect(new InetSocketAddress(host, 445), timeout)\n\t\tprintln \"${host}:${port}##${name}######auto.ssl.port=${port}\"\n\t\tsocket.close()\n\t}\n\tcatch (e) {} // Port isn't open\n}\n\n\nreturn 0"
+    },
+    "discoveryInterval": "1440m",
+    "enabled": true
+  },
+  "collectionAttrs": {
+    "type": "groovy",
+    "content": "/*******************************************************************************\n *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.\n ******************************************************************************/\n// We have to be careful with imports, as javax.net.ssl and apache conflict.\nimport org.apache.http.conn.ssl.SSLSocketFactory\n\nimport javax.net.ssl.SSLContext\nimport javax.net.ssl.TrustManager\nimport javax.net.ssl.X509TrustManager\nimport java.security.Security\nimport java.security.cert.CertificateException\nimport java.security.cert.X509Certificate\n\n// To run in debug mode, set to true\nBoolean debug = false\n\ndef ips = hostProps.get(\"system.ips\") ? hostProps.get(\"system.ips\").split(\",\") : []\ndef wildValue = instanceProps.get(\"wildvalue\")\ndef port = instanceProps.get(\"auto.ssl.port\")\ndef host = wildValue // Assume the wildvalue is just a host name initially\ndef timeout = 10000\n\n// Reassign host and port based on whether last value in split could be a port\ndef wildValueTokens = wildValue.split(\":\")\nif (wildValueTokens.last().isInteger()) {\n\thost = wildValue[0..wildValue.lastIndexOf(':') - 1]\n\tport = wildValueTokens.last()\n}\n\ndef modLoader = new GroovyShell(getBinding()).parse(com.logicmonitor.mod.Snippets.getLoader())\ndef lmEmit = modLoader.load(\"lm.emit\", \"0\")   // Load LM emit module\n\nLMDebugPrint(\"- DEBUG MODE ON -\\n\\tHost: ${host}\\n\\tPort: ${port}\", debug)\n\ndef states = [\n    \"UnrecognizedName\"\t\t   :  0,\n    \"Valid\"\t\t\t\t\t   :  0,\n    \"HostNameMismatch\"\t\t   : -1,\n    \"TimestampCheckFailed\"\t   : -1,\n    \"SelfSignedCertificate\"\t   : -1,\n    \"SelfIssuedCertificate\"\t   : -1,\n    \"InvalidCertificationPath\" : -1,\n    \"ConnectionReset\"\t\t   : -1,\n    \"UnknownHostIPFallback\"\t   : -1,\n    \"OtherException\"\t\t   : -1\n]\n\ndef certificates = []\ndef alreadyReported = false\n\n// We store the socket factory so it can be reused\ndef sslSocketFactory\n\n// Before we run the above, we specify these properies to prevent some auth types\nSystem.setProperty(  \"jdk.tls.disabledAlgorithms\", \"SSLv3, DH keySize < 768\")\nSecurity.setProperty(\"jdk.tls.disabledAlgorithms\", \"SSLv3, DH keySize < 768\")\n\nif (!loadCerts(host, port, sslSocketFactory, certificates, alreadyReported, timeout, debug)) {\n\t// Something has gone wrong. Try the IP instead of the hostname.\n\tips.any{ ip ->\n        LMDebugPrint(\"Attempting fallback with IP - ${ip}\", debug)\n\t\tif (loadCerts(ip, port, sslSocketFactory, certificates, alreadyReported, timeout, debug)) {\n\t\t\t// If we get a successful run, don't process the other IPs\n\t\t\treturn true\n\t\t}\n\t}\n}\n\ndef selfSigned = false\ndef selfIssued = false\n\nif (certificates) {\n    // Get the current time and add 100 years as a base expiry time\n    def time = Calendar.getInstance()\n    time.add(1, 100)\n    def expire = time.getTime()\n\n\t// Get epoch time to use as a base issue time\n\ttime.setTimeInMillis(0)\n\tissue = time.getTime()\n\n\tcertificates.eachWithIndex{ cert, index ->\n\t\t// Is the issuer the same as the subject?\n\t\tif (cert.getIssuerDN() == cert.getSubjectDN()) {\n\t\t\t// Yes! This cert is self issued or self signed.\n\t\t\tselfIssued = cert.isSelfIssued(cert)\n\t\t\tselfSigned = cert.isSelfSigned(cert, null)\n\t\t}\n\n\t\tLMDebugPrint(\"\\tCertification ${index} [Type: ${cert.getType()}]\", debug)\n\t\tLMDebugPrint(\"\\t\\tIssue Date: ${cert.getNotBefore()}, Expiration Date: ${cert.getNotAfter()}\", debug)\n\n\t\t// Is the certificate time after the issue time?\n\t\tif (cert.getNotBefore().after(issue)) {\n\t\t\t// Update the issue time to the certificate's time.\n\t\t\tissue = cert.getNotBefore()\n\t\t}\n\n\t\t// Is the certificate time before the expiry time?\n\t\tif (cert.getNotAfter().before(expire)) {\n\t\t\t// Update the expiry time to the certificate's time.\n\t\t\texpire = cert.getNotAfter()\n\t\t}\n\t}\n\n\tdef now = Calendar.getInstance().getTime()\n\tlong currentTime = now.getTime()\n\tlong expireTime = expire.getTime()\n\n\tlmEmit.dp(\"ChainLength\", certificates.size())\n\tlmEmit.dp(\"TimeRemaining\", ((expireTime - currentTime) / 1000 / 60 / 60 / 24))\n}\n\n// At this point we have all the time based information.\n// We can start a new connection with validation enabled to get validation info.\ntry {\n\t// Create a new ssl socket factory with a default context and strict verification (similar to IE6+ internally).\n\tdef newSslSocketFactory = new SSLSocketFactory(SSLContext.getDefault(), SSLSocketFactory.STRICT_HOSTNAME_VERIFIER)\n\tdef socket = new Socket(host, port.toInteger())\n\tdef sslsocket = newSslSocketFactory.createSocket(socket, host, port.toInteger(), true)\n\n\t// Specify some common ciphers and enable them on our ssl socket\n\tdef ciphers = new HashSet<String>()\n\tciphers.addAll(Arrays.asList(sslsocket.getEnabledCipherSuites()))\n\tciphers.add(\"SSL_RSA_WITH_RC4_128_SHA\")\n\tciphers.add(\"SSL_RSA_WITH_RC4_128_MD5\")\n\tsslsocket.setEnabledCipherSuites(ciphers.toArray(new String[ciphers.size()]))\n\n\t// Begin a handshake. At this point we will find out if we have an exception.\n\tsslsocket.startHandshake()\n\n    // If we didn't throw, then this is a valid cert\n\tstates[\"Valid\"] = 1\n\n    // Reassign values for states with default -1 values; valid cert indicates there are no issues\n\tstates.each{ k,v->\n\t\tif(v == -1) {\n\t\t\tstates[k] = 0\n\t\t}\n\t}\n}\ncatch (Exception e) { // The certificate is invalid!\n\tLMDebugPrint(\"\\n\\tMessage: ${e.message}\\n\", debug)\n\n    // Make note of issues we can identify.  Leave others we can't verify as -1 to indicate issue not explicitly discovered but could exist.\n\tif (e.message.contains(\"doesn't match\")) {\n\t\tstates[\"HostNameMismatch\"] = 1\n\t\talreadyReported = true\n\t}\n\n    if (e.toString().contains(\"UnknownHostException\")) {\n\t\tstates[\"UnknownHostIPFallback\"] = 1\n\t\talreadyReported = true\n\t}\n\n\tif (e.message.contains(\"timestamp check failed\")) {\n\t\tstates[\"TimestampCheckFailed\"] = 1\n\t\talreadyReported = true\n\t}\n\n\tif (e.message.contains(\"Connection reset\")) {\n\t\tstates[\"ConnectionReset\"] = 1\n\t\talreadyReported = true\n\t}\n\n\tif (e.message.contains(\"valid certification path\")) {\n\t\t// This is an error further down the path (such as an invalid root or self-sign)\n\t\tif (selfSigned) {\n\t\t\tstates[\"SelfSignedCertificate\"] = 1\n\t\t}\n        else {\n\t\t\tif (selfIssued) {\n\t\t\t\tstates[\"SelfIssuedCertificate\"] = 1\n\t\t\t}\n            else {\n\t\t\t\tstates[\"InvalidCertificationPath\"] = 1\n\t\t\t}\n\t\t}\n\t\talreadyReported = true\n\t}\n\n    // Make note of unknown exceptions and print to debug\n\tif (!alreadyReported) {\n\t\tstates[\"OtherException\"] = 1\n\t\tLMDebugPrint(\"\\n\\tThis issue was detected but doesn't have a known solution; reporting as 'Other'\", debug)\n\t}\n}\n\nstates.each{ k,v->\n\tlmEmit.dp(k, v)\n}\n\nreturn 0\n\n\n/**\n * Helper function to print out debug messages for troubleshooting purposes.\n */\nvoid LMDebugPrint(message, Boolean debug=false) {\n    if (debug) {\n        println(message.toString())\n    }\n}\n\n\n/**\n * This custom trust manager class allows all certificates, but extracts them as it does so.\n */\nclass LMEmptyX509TrustManager implements TrustManager, X509TrustManager {\n\tprivate def managerLog\n\tprivate def globalCerts\n\n\tprivate LMEmptyX509TrustManager(_managerLog, _globalCerts) {\n\t\tmanagerLog = _managerLog\n\t\tglobalCerts = _globalCerts\n\t}\n\n\t// Define all X509TrustManager functions to not fail validation on expire.\n\t@Override\n\tX509Certificate[] getAcceptedIssuers() {\n\t\tmanagerLog.push(\"\\tTrustManager: getAcceptedIssuers called.\")\n        X509Certificate[] emptyList = []\n\n\t\treturn emptyList\n\t}\n\n\t@Override\n\tvoid checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {\n\t\tmanagerLog.push(\"\\tTrustManager: checkServerTrusted got ${(certs == null ? 0 : certs.length)} certs. Auth type: ${authType}\")\n\n\t\t// Instead of checking if the cert is trusted...save it to our global storage!\n\t\tif (certs) {\n\t\t\tglobalCerts.clear()\n\t\t\tglobalCerts.addAll(certs)\n\t\t}\n\t}\n\n\t@Override\n\tvoid checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {\n\t\tmanagerLog.push(\"\\tTrustManager: checkClientTrusted got ${(certs == null ? 0 : certs.length)} certs. Auth type: ${authType}\")\n\t}\n}\n\n\n/**\n * Gather certificates from a host and port, and put them into global storage.\n */\ndef loadCerts(host, port, sslSocketFactory, certificates, alreadyReported, timeout, debug=false, log=[]) {\n\tdef sslSock = null\n    def success = false\n\n\t// Writing to sockets has a chance of failure, so lets try/catch.\n\ttry {\n        // Create a socket factory - if it doesn't already exist - using custom trust manager to trust all certs\n\t\tif (sslSocketFactory == null) {\n\t\t\tdef trustManager = new LMEmptyX509TrustManager(log, certificates)\n\n\t\t\t// In the case of TLSv1.2, we want to use our custom trust manager\n\t\t\tdef context = SSLContext.getInstance(\"TLSv1.2\")\n\t\t\tcontext.init(null, [trustManager] as TrustManager[], null)\n\n\t\t\tsslSocketFactory = context.getSocketFactory()\n\t\t}\n\n\t\tdef sock = new Socket()\n\t\tsock.connect(new InetSocketAddress(host, port.toInteger()), timeout)\n\t\tsslSock = sslSocketFactory.createSocket(sock, host, port.toInteger(), true)\n\n\t\t// Specify some common ciphers and enable them on our SSL socket\n\t\tdef ciphers = new HashSet<String>()\n\t\tciphers.addAll(Arrays.asList(sslSock.getEnabledCipherSuites()))\n\t\tciphers.add(\"SSL_RSA_WITH_RC4_128_SHA\")\n\t\tciphers.add(\"SSL_RSA_WITH_RC4_128_MD5\")\n\t\tsslSock.setEnabledCipherSuites(ciphers.toArray(new String[ciphers.size()]))\n\n\t\t// Make a request to send. The text doesnt seem to matter as we don't care about the response.\n\t\tdef request = \"GET / HTTP/1.1\\r\\nHost:${host}:${port}\\r\\nConnection:Close\\r\\nUser-Agent:SSLClient/1.0\\r\\n\\r\\n\"\n\n\t\t// Create a writer we will use to send our request.\n\t\tdef writer = new OutputStreamWriter(sslSock.getOutputStream(), \"utf-8\")\n\t\tLMDebugPrint(\"\\nTry to send request to server...\", debug)\n\n\t\t// Write the request to the output stream.\n\t\twriter.write(request)\n\t\tLMDebugPrint(\"\\tRequest sent...\", debug)\n\n\t\t// Make sure the output stream has consumed our request.\n\t\twriter.flush()\n\t\tLMDebugPrint(\"\\tRequest flushed...\\n\\tSUCCESS\", debug)\n\n        success = true\n\t}\n\tcatch (Exception e) {\n\t\t// Something went wrong! Will be investigated later in the script.\n\t\tLMDebugPrint(\"\\tSocket Error: ${e}\", debug)\n\n        if (e.message.contains(\"unrecognized_name\") && !alreadyReported) {\n            states[\"UnrecognizedName\"] = 1\n            alreadyReported = true\n        }\n\t}\n\n\t// If the ssl sock isn't closed already, we need to do it!\n\tif (sslSock != null) {\n\t\tsslSock.close()\n\t}\n\n    // Print log info from trust manager class\n    if (debug && log) {\n        println \"\\n${log.join('\\n')}\"\n    }\n\n\treturn success\n}"
+  },
+  "type": 0,
+  "technicalNotes": "Performs port scan during Active Discovery.\ncustom.ssl_listening_ports should have this syntax:\n80|HTTP,443|HTTPS,445|CMS Web Admin",
+  "useWildValueAsUniqueIdentifier": false,
+  "version": 1695998414,
+  "registryMetadata": {
+    "currentUuid": "O-iYNmU9QCiuDpZuWXH3cg",
+    "originalUuid": "O-iYNmU9QCiuDpZuWXH3cg",
+    "locatorId": "",
+    "authorCompanyUuid": "e4148cb8-5f4f-4498-992c-80d594f0f60d",
+    "registryVersion": "1.0.0",
+    "checksum": "44410aef0d2fb4d5989a1ac37b17d558",
+    "namespace": "",
+    "registryId": ""
+  },
+  "multiInstance": true,
+  "graphs": [
+    {
+      "datapoints": [
+        {
+          "datapointName": "ConnectionReset",
+          "consolidationFn": "max",
+          "name": "ConnectionReset"
+        },
+        {
+          "datapointName": "HostNameMismatch",
+          "consolidationFn": "max",
+          "name": "HostNameMismatch"
+        },
+        {
+          "datapointName": "InvalidCertificationPath",
+          "consolidationFn": "max",
+          "name": "InvalidCertificationPath"
+        },
+        {
+          "datapointName": "SelfIssuedCertificate",
+          "consolidationFn": "max",
+          "name": "SelfIssuedCertificate"
+        },
+        {
+          "datapointName": "SelfSignedCertificate",
+          "consolidationFn": "max",
+          "name": "SelfSignedCertificate"
+        },
+        {
+          "datapointName": "TimestampCheckFailed",
+          "consolidationFn": "max",
+          "name": "TimestampCheckFailed"
+        },
+        {
+          "datapointName": "OtherException",
+          "consolidationFn": "max",
+          "name": "UnknownException"
+        },
+        {
+          "datapointName": "UnknownHostIPFallback",
+          "consolidationFn": "max",
+          "name": "UnknownHostIPFallback"
+        },
+        {
+          "datapointName": "UnrecognisedName",
+          "consolidationFn": "max",
+          "name": "UnrecognizedName"
+        },
+        {
+          "datapointName": "Valid",
+          "consolidationFn": "max",
+          "name": "Valid"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "max": 1,
+      "name": "Certificate Validity",
+      "verticalLabel": "0=ok, 1=error",
+      "displayPriority": 2,
+      "scale1024": false,
+      "virtualDatapoints": [
+        {
+          "name": "ConnectionResetClean",
+          "expr": "if(eq(ConnectionReset,1),ConnectionReset,unkn())"
+        },
+        {
+          "name": "HostNameMismatchClean",
+          "expr": "if(eq(HostNameMismatch,1),HostNameMismatch,unkn())"
+        },
+        {
+          "name": "InvalidCertificationPathClean",
+          "expr": "if(eq(InvalidCertificationPath,1),InvalidCertificationPath,unkn())"
+        },
+        {
+          "name": "SelfIssuedCertificateClean",
+          "expr": "if(eq(SelfIssuedCertificate,1),SelfIssuedCertificate,unkn())"
+        },
+        {
+          "name": "SelfSignedCertificateClean",
+          "expr": "if(eq(SelfSignedCertificate,1),SelfSignedCertificate,unkn())"
+        },
+        {
+          "name": "TimestampCheckFailedClean",
+          "expr": "if(eq(TimestampCheckFailed,1),TimestampCheckFailed,unkn())"
+        },
+        {
+          "name": "UnknownExceptionClean",
+          "expr": "if(eq(UnknownException,1),UnknownException,unkn())"
+        },
+        {
+          "name": "UnknownHostIPFallbackClean",
+          "expr": "if(eq(UnknownHostIPFallback,1),UnknownHostIPFallback,unkn())"
+        },
+        {
+          "name": "UnrecognizedNameClean",
+          "expr": "if(eq(UnrecognizedName,1),UnrecognizedName,unkn())"
+        },
+        {
+          "name": "ValidClean",
+          "expr": "if(eq(Valid,1),Valid,unkn())"
+        }
+      ],
+      "title": "Certificate Validity",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "ConnectionResetClean",
+          "color": "teal",
+          "legend": "Connection Reset",
+          "isVirtual": true,
+          "type": "line"
+        },
+        {
+          "datapointName": "HostNameMismatchClean",
+          "color": "yellow",
+          "legend": "Host Name Mismatch",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "InvalidCertificationPathClean",
+          "color": "orange",
+          "legend": "Invalid Path",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "SelfIssuedCertificateClean",
+          "color": "navy",
+          "legend": "Self Issued",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "SelfSignedCertificateClean",
+          "color": "fuchsia",
+          "legend": "Self Signed",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "TimestampCheckFailedClean",
+          "color": "red",
+          "legend": "Invalid Timestamp",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "UnknownExceptionClean",
+          "color": "black",
+          "legend": "Unknown Failure",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "UnknownHostIPFallbackClean",
+          "color": "maroon",
+          "legend": "Unknown Host",
+          "isVirtual": true,
+          "type": "line"
+        },
+        {
+          "datapointName": "UnrecognizedNameClean",
+          "color": "red1",
+          "legend": "Unrecognized Name",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "ValidClean",
+          "color": "olive",
+          "legend": "Valid",
+          "isVirtual": true,
+          "type": "area"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "DaysRemaining",
+          "consolidationFn": "average",
+          "name": "DaysRemaining"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "name": "Expiry Time",
+      "verticalLabel": "days",
+      "displayPriority": 1,
+      "scale1024": false,
+      "virtualDatapoints": [
+        {
+          "name": "Remaining",
+          "expr": "if(ge(DaysRemaining,0), DaysRemaining, unkn())"
+        },
+        {
+          "name": "Expired",
+          "expr": "if(ge(DaysRemaining,0), unkn(), 0-DaysRemaining)"
+        }
+      ],
+      "title": "Expiry Time",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "Expired",
+          "color": "red",
+          "legend": "Expired",
+          "isVirtual": true,
+          "type": "area"
+        },
+        {
+          "datapointName": "Remaining",
+          "color": "olive",
+          "legend": "Remaining",
+          "isVirtual": true,
+          "type": "area"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "ChainLength",
+          "consolidationFn": "max",
+          "name": "ChainLength"
+        }
+      ],
+      "min": 0,
+      "timeScale": "1day",
+      "name": "SSL Chain Length",
+      "verticalLabel": "count",
+      "displayPriority": 3,
+      "scale1024": false,
+      "title": "SSL Chain Length",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "ChainLength",
+          "color": "aqua",
+          "legend": "Chain Length",
+          "isVirtual": false,
+          "type": "line"
+        }
+      ]
+    }
+  ],
+  "name": "SSL_Certificates_Custom",
+  "collectionInterval": "30m",
+  "dataSourceType": 1,
+  "group": "",
+  "overviewGraphs": [
+    {
+      "datapoints": [
+        {
+          "datapointName": "Valid",
+          "aggregateMethod": "sum",
+          "consolidationFn": "max",
+          "name": "Valid"
+        }
+      ],
+      "min": -1,
+      "timeScale": "1day",
+      "max": 2,
+      "name": "Certificate Validity Overview",
+      "verticalLabel": "0=ok, 1=error",
+      "displayPriority": 1,
+      "aggregated": false,
+      "scale1024": false,
+      "title": "Certificate Validity Overview",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "Valid",
+          "color": "AUTO",
+          "legend": "##INSTANCE##",
+          "isVirtual": false,
+          "type": "line"
+        }
+      ]
+    }
+  ],
+  "headers": {
+    "cache-control": "no-cache, no-store",
+    "content-disposition": "attachment; filename=\"SSL_Certificates_Custom.json\"",
+    "content-encoding": "gzip",
+    "content-type": "application/json",
+    "date": "Fri, 30 Aug 2024 22:18:27 GMT",
+    "server": "LM",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "vary": "accept-encoding",
+    "x-content-type-options": "nosniff",
+    "x-server-version": "209-7"
+  }
+}
