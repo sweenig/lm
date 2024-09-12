@@ -1,8 +1,13 @@
+/*******************************************************************************
+ *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.
+ ******************************************************************************/
+
 import com.jcraft.jsch.JSch
 import com.santaba.agent.util.Settings
 
 host = hostProps.get("system.hostname")
-services_regex = hostProps.get("Linux_SSH_Systemd_Services_Select.includeRegEx") ?: "sshd.service"
+services_regex = hostProps.get("linux.ssh.services.regex") ?: sshd
+services_exclude_regex = hostProps.get("linux.ssh.services.exclude.regex") ?: ''
 user = hostProps.get("ssh.user")
 pass = hostProps.get("ssh.pass")
 port = hostProps.get("ssh.port")?.toInteger() ?: 22
@@ -25,7 +30,8 @@ command_output.eachLine { line ->
     if (matcher.size() > 0) {
         def service = matcher[0][1]
         def svc_desc = matcher[0][5]
-        if (service ==~ /${services_regex}/) {
+        // Match and exclude services from the regex properties
+        if (service ==~ /${services_regex}/ && !(service ==~ /${services_exclude_regex}/)) {
             println "${service}##${service}##${svc_desc}";
         }
     }
