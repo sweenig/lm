@@ -64,23 +64,10 @@
     "discoveryMethod": "ad_script",
     "autoDeleteInstances": false,
     "disableDiscoveredInstances": false,
-    "filters": [
-      {
-        "op": "RegexNotMatch",
-        "comment": "By default, only sshd.service will be matched",
-        "attr": "##WILDVALUE##",
-        "value": "##Linux_SSH_Systemd_Services_Select.includeRegEx##"
-      },
-      {
-        "op": "RegexMatch",
-        "comment": "Excludes",
-        "attr": "##WILDVALUE##",
-        "value": "##Linux_SSH_Systemd_Services_Select.excludeRegEx##"
-      }
-    ],
+    "filters": [],
     "params": {
       "type": "groovy",
-      "content": "/*******************************************************************************\r\n *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.\r\n ******************************************************************************/\r\n\r\nimport com.jcraft.jsch.JSch\r\nimport com.santaba.agent.util.Settings\r\n\r\nhost = hostProps.get(\"system.hostname\")\r\nservices_regex = hostProps.get(\"Linux_SSH_Systemd_Services_Select.includeRegEx\") ?: \"sshd.service\"\r\nuser = hostProps.get(\"ssh.user\")\r\npass = hostProps.get(\"ssh.pass\")\r\nport = hostProps.get(\"ssh.port\")?.toInteger() ?: 22\r\ncert = hostProps.get(\"ssh.cert\") ?: '~/.ssh/id_rsa'\r\ntimeout = 15000 // timeout in milliseconds\r\n\r\ndef azureHost = hostProps.get(\"system.azure.privateIpAddress\")\r\nif (azureHost && hostProps.get(\"auto.network.resolves\") == \"false\") host = azureHost\r\n\r\n// Expected pattern of output lines with data\r\ndef line_pattern = ~/^\\/?\\s*(\\S+)\\s+(\\w*loaded|not-found|masked\\w*)\\s+(\\w*active|inactive|failed\\w*)\\s+(\\S+)\\s+(.*)$/\r\n\r\n// Run command to show any unit that systemd loaded or attempted to load, regardless of its current state on the system.\r\ndef command = 'systemctl list-units --all --type=service --plain --state=loaded | egrep service'\r\ndef command_output = getCommandOutput(command)\r\n\r\ncommand_output.eachLine { line ->\r\n    def matcher = line_pattern.matcher(line) ?: [:]\r\n    // Process lines that contain a match\r\n    if (matcher.size() > 0) {\r\n        def service = matcher[0][1]\r\n        def svc_desc = matcher[0][5]\r\n        if (service ==~ /${services_regex}/) {\r\n            println \"${service}##${service}##${svc_desc}\";\r\n        }\r\n    }\r\n}       \r\n\r\n// Helper function for SSH connection and command passing\r\ndef getCommandOutput(String input_command) {\r\n    try {\r\n        // instantiate JSCH object.\r\n        jsch = new JSch()\r\n\r\n        // do we have an user and no pass ?\r\n        if (user && !pass) {\r\n            // Yes, so lets try connecting via cert.\r\n            jsch.addIdentity(cert)\r\n        }\r\n\r\n        // create session.\r\n        session = jsch.getSession(user, host, port)\r\n\r\n        // given we are running non-interactively, we will automatically accept new host keys.\r\n        session.setConfig(\"StrictHostKeyChecking\", \"no\");\r\n        String authMethod = Settings.getSetting(Settings.SSH_PREFEREDAUTHENTICATION, Settings.DEFAULT_SSH_PREFEREDAUTHENTICATION);\r\n        session.setConfig(\"PreferredAuthentications\", authMethod);\r\n\r\n        // set session timeout, in milliseconds.\r\n        session.setTimeout(timeout)\r\n\r\n        // is host configured with a user & password?\r\n        if (pass) {\r\n            // set password.\r\n            session.setPassword(pass);\r\n        }\r\n\r\n        // connect\r\n        session.connect()\r\n\r\n        // execute command.\r\n        channel = session.openChannel(\"exec\")\r\n        channel.setCommand(input_command)\r\n\r\n        // collect command output.\r\n        def commandOutput = channel.getInputStream()\r\n        channel.connect()\r\n\r\n        def output = commandOutput.text;\r\n\r\n        // disconnect\r\n        channel.disconnect()\r\n\r\n        return output\r\n    }\r\n    // ensure we disconnect the session.\r\n    finally {\r\n        session.disconnect()\r\n    }\r\n}\r\n"
+      "content": "/*******************************************************************************\r\n *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.\r\n ******************************************************************************/\r\n\r\nimport com.jcraft.jsch.JSch\r\nimport com.santaba.agent.util.Settings\r\n\r\nhost = hostProps.get(\"system.hostname\")\r\nservices_regex = hostProps.get(\"Linux_SSH_Systemd_Services_Select.includeRegEx\") ?: sshd\r\nservices_exclude_regex = hostProps.get(\"Linux_SSH_Systemd_Services_Select.excludeRegEx\") ?: ''\r\nuser = hostProps.get(\"ssh.user\")\r\npass = hostProps.get(\"ssh.pass\")\r\nport = hostProps.get(\"ssh.port\")?.toInteger() ?: 22\r\ncert = hostProps.get(\"ssh.cert\") ?: '~/.ssh/id_rsa'\r\ntimeout = 15000 // timeout in milliseconds\r\n\r\ndef azureHost = hostProps.get(\"system.azure.privateIpAddress\")\r\nif (azureHost && hostProps.get(\"auto.network.resolves\") == \"false\") host = azureHost\r\n\r\n// Expected pattern of output lines with data\r\ndef line_pattern = ~/^\\/?\\s*(\\S+)\\s+(\\w*loaded|not-found|masked\\w*)\\s+(\\w*active|inactive|failed\\w*)\\s+(\\S+)\\s+(.*)$/\r\n\r\n// Run command to show any unit that systemd loaded or attempted to load, regardless of its current state on the system.\r\ndef command = 'systemctl list-units --all --type=service --plain --state=loaded | egrep service'\r\ndef command_output = getCommandOutput(command)\r\n\r\ncommand_output.eachLine { line ->\r\n    def matcher = line_pattern.matcher(line) ?: [:]\r\n    // Process lines that contain a match\r\n    if (matcher.size() > 0) {\r\n        def service = matcher[0][1]\r\n        def svc_desc = matcher[0][5]\r\n        // Match and exclude services from the regex properties\r\n        if (service ==~ /${services_regex}/ && !(service ==~ /${services_exclude_regex}/)) {\r\n            println \"${service}##${service}##${svc_desc}\";\r\n        }\r\n    }\r\n}       \r\n\r\n// Helper function for SSH connection and command passing\r\ndef getCommandOutput(String input_command) {\r\n    try {\r\n        // instantiate JSCH object.\r\n        jsch = new JSch()\r\n\r\n        // do we have an user and no pass ?\r\n        if (user && !pass) {\r\n            // Yes, so lets try connecting via cert.\r\n            jsch.addIdentity(cert)\r\n        }\r\n\r\n        // create session.\r\n        session = jsch.getSession(user, host, port)\r\n\r\n        // given we are running non-interactively, we will automatically accept new host keys.\r\n        session.setConfig(\"StrictHostKeyChecking\", \"no\");\r\n        String authMethod = Settings.getSetting(Settings.SSH_PREFEREDAUTHENTICATION, Settings.DEFAULT_SSH_PREFEREDAUTHENTICATION);\r\n        session.setConfig(\"PreferredAuthentications\", authMethod);\r\n\r\n        // set session timeout, in milliseconds.\r\n        session.setTimeout(timeout)\r\n\r\n        // is host configured with a user & password?\r\n        if (pass) {\r\n            // set password.\r\n            session.setPassword(pass);\r\n        }\r\n\r\n        // connect\r\n        session.connect()\r\n\r\n        // execute command.\r\n        channel = session.openChannel(\"exec\")\r\n        channel.setCommand(input_command)\r\n\r\n        // collect command output.\r\n        def commandOutput = channel.getInputStream()\r\n        channel.connect()\r\n\r\n        def output = commandOutput.text;\r\n\r\n        // disconnect\r\n        channel.disconnect()\r\n\r\n        return output\r\n    }\r\n    // ensure we disconnect the session.\r\n    finally {\r\n        session.disconnect()\r\n    }\r\n}\r\n"
     },
     "discoveryInterval": "1440m",
     "enabled": true
@@ -92,14 +79,14 @@
   "type": 0,
   "technicalNotes": "Refer to the support article below for instructions on adding monitored instances directly on the resource.  To monitor a list of services automatically, use a comma-separated list in the host property linux.ssh.services, enable Active Discovery, and add the script provided in the support article.\n\n- Support: https://www.logicmonitor.com/support/monitoring/os-virtualization/linux-via-ssh-monitoring",
   "useWildValueAsUniqueIdentifier": false,
-  "version": 1726153591,
+  "version": 1726156468,
   "registryMetadata": {
     "currentUuid": "h-01GlbUTyOsFW1HKR370A",
     "originalUuid": "h-01GlbUTyOsFW1HKR370A",
     "locatorId": "",
     "authorCompanyUuid": "1585a0a9-1289-4dc4-964b-cf3458aef8da",
-    "registryVersion": "1.0.0",
-    "checksum": "0ac95396d54b70115ef6f2c1f7976519",
+    "registryVersion": "1.1.0",
+    "checksum": "259ff89534f8eb2a06c6661e2a4dcdd3",
     "namespace": "",
     "registryId": ""
   },
@@ -188,15 +175,15 @@
     }
   ],
   "integrationMetadata": {
-    "publishedAtMS": 1726153758467,
+    "publishedAtMS": 1726156494131,
     "authorCompanyUuid": "1585a0a9-1289-4dc4-964b-cf3458aef8da",
     "namespace": "switch",
-    "registryVersion": "1.0.0",
+    "registryVersion": "1.1.0",
     "name": "",
-    "checksum": "0ac95396d54b70115ef6f2c1f7976519",
-    "registryId": "9ebc5941-9c40-4035-8296-fa7480bb32a2",
+    "checksum": "259ff89534f8eb2a06c6661e2a4dcdd3",
+    "registryId": "39820bdf-0dcf-418c-a706-30069cc0b7a9",
     "isPrivate": false,
-    "locator": "TJ3JJH",
+    "locator": "KACWM6",
     "lineageId": "h-01GlbUTyOsFW1HKR370A",
     "status": "SECURITY_REVIEW"
   },
@@ -240,7 +227,7 @@
     "content-disposition": "attachment; filename=\"Switch_Linux_SSH_ServiceStatus.json\"",
     "content-encoding": "gzip",
     "content-type": "application/json",
-    "date": "Thu, 12 Sep 2024 15:09:31 GMT",
+    "date": "Thu, 12 Sep 2024 15:55:54 GMT",
     "server": "LM",
     "strict-transport-security": "max-age=31536000; includeSubDomains",
     "vary": "accept-encoding",
