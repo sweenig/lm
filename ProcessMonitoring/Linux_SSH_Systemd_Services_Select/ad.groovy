@@ -6,8 +6,8 @@ import com.jcraft.jsch.JSch
 import com.santaba.agent.util.Settings
 
 host = hostProps.get("system.hostname")
-services_regex = hostProps.get("linux.ssh.services.regex") ?: sshd
-services_exclude_regex = hostProps.get("linux.ssh.services.exclude.regex") ?: ''
+services_regex = hostProps.get("Linux_SSH_Systemd_Services_Select.includeRegEx") ?: sshd
+services_exclude_regex = hostProps.get("Linux_SSH_Systemd_Services_Select.excludeRegEx") ?: ''
 user = hostProps.get("ssh.user")
 pass = hostProps.get("ssh.pass")
 port = hostProps.get("ssh.port")?.toInteger() ?: 22
