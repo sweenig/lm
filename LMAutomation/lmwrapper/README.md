@@ -68,6 +68,14 @@ Which one would you like to use? 0
 ---OUTPUT TRUNCATED---
 
 ```
+### Using Pagination
+One of the strategic limitations of the LM API is that it uses pagination so that individual calls don't require too many resources to fulfill. This means that in order to get an entire list of objects, you may have to make multiple calls. The wrapper handles this for you as well. Simply call the paginate method referencing the method you want to call along with any arguments:
+
+```python
+>>> devices = paginate(lm.get_device_list)
+>>> alerts = paginate(lm.get_alert_list, filter="cleared:\"False\"")
+```
+
 
 ## Sending log data to LM Logs
 I've added my functions for sending logs to LM Logs. It uses the same credentials from the credentials file. LM Logs log entries can be associated with a specific device in your portal. You need to pass the system.deviceId into the `log_msg` function in order for this to work. If you don't know the id at runtime, you can find the name by using the `getDeviceByDisplayName()` function:
@@ -112,6 +120,14 @@ LM_API("GET","/alert/alerts")
  'enableAnomalyAlertGeneration': '', 'internalId': 'LMD19453', 'ackComment': '', 
  'monitorObjectName':...
 ---OUTPUT TRUNCATED---
+```
+
+### Using Pagination
+One of the strategic limitations of the LM API is that it uses pagination so that individual calls don't require too many resources to fulfill. This means that in order to get an entire list of objects, you may have to make multiple calls. The wrapper handles this for you as well. Simply call the LM_APIp method using the same arguments as LM_API():
+
+```python
+>>> devices = LM_APIp(httpVerb="GET", resourcePath="/device/devices")
+>>> alerts = LM_APIp(httpVerb="GET",resourcePath="/alert/alerts", queryParams={"filter":"cleared:\"False\""})
 ```
 
 ## License

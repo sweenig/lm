@@ -19,6 +19,18 @@ Create a config file called creds.json in this directory that looks like this:
   "COMPANY_NAME": "yourportalname"
 }}"""
 
+def paginate(lmmethod, **kwargs): # paginates calls for any method in the SDK.
+    data = []
+    end_found = False
+    offset = 0
+    size = 1000
+    while not end_found:
+        current = lmmethod(size=size, offset=offset, **kwargs).items
+        data += current
+        offset += len(current)
+        end_found = len(current) != size
+    return data
+
 # General SDK access
 if path.exists(credsfile):
     with open(credsfile) as f: creds = json.load(f)
@@ -45,7 +57,7 @@ if path.exists(credsfile):
     lm_creds = {"AccessId": creds['API_ACCESS_ID'],"AccessKey": creds['API_ACCESS_KEY'],"Company": creds['COMPANY_NAME']}
 else:
     print(error_message)
-    lm = ""
+    lm = None
 
 # get device id by device name
 def getDeviceByDisplayName(displayName):
@@ -131,3 +143,15 @@ def LM_API(httpVerb, resourcePath, data="", queryParams={}):
     # print('Response Status:',response.status_code)
     # print('Response Body:',response.content)
     return json.loads(response.text)
+
+def LM_APIp(queryParams = {}, **kwargs):
+    data = []
+    end_found = False
+    offset = 0
+    size = 1000
+    while not end_found:
+        current = LM_API(**kwargs, queryParams={"size":size, "offset": offset, **queryParams})['items']
+        data += current
+        offset += len(current)
+        end_found = len(current) != size
+    return data
