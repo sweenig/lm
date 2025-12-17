@@ -4,6 +4,7 @@ import logicmonitor_sdk, json, requests, hashlib, base64, hmac, time
 from datetime import datetime
 from os import path
 import __main__ as main
+from functools import wraps
 
 # simple helper function not really used here
 def response_to_json(response):
@@ -31,6 +32,43 @@ def paginate(lmmethod, **kwargs): # paginates calls for any method in the SDK.
         end_found = len(current) != size
     return data
 
+class AutoPagingLMApi:
+    """Proxy LMApi that adds automatic pagination with per-call overrides."""
+    def __init__(self, api, default_page_size=1000, default_paginate=True):
+        self._api = api
+        self._default_page_size = default_page_size
+        self._default_paginate = default_paginate
+
+    def __getattr__(self, name):
+        attr = getattr(self._api, name)
+        if not callable(attr):
+            return attr
+
+        @wraps(attr)
+        def wrapped(*args, paginate=None, page_size=None, **kwargs):
+            should_paginate = self._default_paginate if paginate is None else paginate
+            if not should_paginate:
+                return attr(*args, **kwargs)
+
+            request_kwargs = dict(kwargs)
+            size = page_size or request_kwargs.pop("size", None) or self._default_page_size
+            offset = request_kwargs.pop("offset", 0)
+            data = []
+            while True:
+                response = attr(*args, size=size, offset=offset, **request_kwargs)
+                items = getattr(response, "items", None)
+                if items is None:
+                    return response
+                data.extend(items)
+                if len(items) < size:
+                    break
+                offset += len(items)
+            return data
+        return wrapped
+
+    def paginate(self, lmmethod, **kwargs):
+        return paginate(lmmethod, **kwargs)
+
 # General SDK access
 if path.exists(credsfile):
     with open(credsfile) as f: creds = json.load(f)
@@ -52,7 +90,8 @@ if path.exists(credsfile):
     configuration.company           = creds['COMPANY_NAME']
     configuration.access_id         = creds['API_ACCESS_ID']
     configuration.access_key        = creds['API_ACCESS_KEY']
-    lm = logicmonitor_sdk.LMApi(logicmonitor_sdk.ApiClient(configuration))
+    base_lm = logicmonitor_sdk.LMApi(logicmonitor_sdk.ApiClient(configuration))
+    lm = AutoPagingLMApi(base_lm)
     # build the creds for use in other functions
     lm_creds = {"AccessId": creds['API_ACCESS_ID'],"AccessKey": creds['API_ACCESS_KEY'],"Company": creds['COMPANY_NAME']}
 else:
