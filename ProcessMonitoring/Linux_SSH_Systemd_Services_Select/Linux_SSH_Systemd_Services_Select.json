@@ -1,0 +1,237 @@
+{
+  "collectionMethod": "batchscript",
+  "datapoints": [
+    {
+      "max": "",
+      "triggerInterval": 20,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "The high-level unit activation state.\n\nStatus codes:\n0=active, \n1=exited, \n2=failed, \n4=not loaded",
+      "interpretMethod": "namevalue",
+      "threshold": "= 2 2",
+      "interpretExpr": "##WILDVALUE##.active",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "Ug_3j5XeRyubPeQaKe15KQ",
+      "useValue": "output",
+      "min": "0",
+      "alertBody": "Service ##INSTANCE## on ##HOST## is reporting activation state of ##VALUE## indicating this service has failed, placing the host into ##LEVEL## state.\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "ActivationState",
+      "noData": "Trigger error alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 20,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "Reflects whether the unit is loaded. \n\nStatus codes: \n0=loaded, \n1=masked, \n2=not found, \n4=not listed",
+      "interpretMethod": "namevalue",
+      "threshold": ">= 2 2",
+      "interpretExpr": "##WILDVALUE##.load",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "Nqh8mvL6RNq1iAz6yEcqXQ",
+      "useValue": "output",
+      "min": "0",
+      "alertBody": "Service ##INSTANCE## on ##HOST## is reporting load state of ##VALUE##, placing the host into ##LEVEL## state.\n\n##DPDESCRIPTION##\n\nThis started at ##START##, -- or ##DURATION## ago.",
+      "name": "LoadState",
+      "noData": "Do not trigger an alert"
+    },
+    {
+      "max": "",
+      "triggerInterval": 0,
+      "dataType": 7,
+      "maxDigits": 4,
+      "description": "The low-level unit activation state.\n\nStatus codes:\n0=running, \n1=exited, \n2=failed, \n3=dead, \n4=not loaded",
+      "interpretMethod": "namevalue",
+      "interpretExpr": "##WILDVALUE##.sub",
+      "type": "gauge",
+      "clearInterval": 0,
+      "originId": "VZ2FvN7QR7-eiJ6CK6uvmA",
+      "useValue": "output",
+      "min": "0",
+      "name": "SubState",
+      "noData": "Do not trigger an alert"
+    }
+  ],
+  "searchKeywords": "linux,service,ssh",
+  "displayedAs": "Service Status",
+  "description": "Linux systemd services via SSH using the systemctl list-units command..",
+  "appliesTo": "/* Set by PropertySource. */\nhasCategory(\"Linux_SSH\")",
+  "activeDiscovery": {
+    "deleteInactiveInstances": false,
+    "groupMethod": "none",
+    "discoveryMethod": "ad_script",
+    "autoDeleteInstances": false,
+    "disableDiscoveredInstances": false,
+    "filters": [],
+    "params": {
+      "type": "groovy",
+      "content": "/*******************************************************************************\r\n *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.\r\n ******************************************************************************/\r\n\r\nimport com.jcraft.jsch.JSch\r\nimport com.santaba.agent.util.Settings\r\n\r\nhost = hostProps.get(\"system.hostname\")\r\nservices_regex = hostProps.get(\"Linux_SSH_Systemd_Services_Select.includeRegEx\") ?: sshd\r\nservices_exclude_regex = hostProps.get(\"Linux_SSH_Systemd_Services_Select.excludeRegEx\") ?: ''\r\nuser = hostProps.get(\"ssh.user\")\r\npass = hostProps.get(\"ssh.pass\")\r\nport = hostProps.get(\"ssh.port\")?.toInteger() ?: 22\r\ncert = hostProps.get(\"ssh.cert\") ?: '~/.ssh/id_rsa'\r\ntimeout = 15000 // timeout in milliseconds\r\n\r\ndef azureHost = hostProps.get(\"system.azure.privateIpAddress\")\r\nif (azureHost && hostProps.get(\"auto.network.resolves\") == \"false\") host = azureHost\r\n\r\n// Expected pattern of output lines with data\r\ndef line_pattern = ~/^\\/?\\s*(\\S+)\\s+(\\w*loaded|not-found|masked\\w*)\\s+(\\w*active|inactive|failed\\w*)\\s+(\\S+)\\s+(.*)$/\r\n\r\n// Run command to show any unit that systemd loaded or attempted to load, regardless of its current state on the system.\r\ndef command = 'systemctl list-units --all --type=service --plain --state=loaded | egrep service'\r\ndef command_output = getCommandOutput(command)\r\n\r\ncommand_output.eachLine { line ->\r\n    def matcher = line_pattern.matcher(line) ?: [:]\r\n    // Process lines that contain a match\r\n    if (matcher.size() > 0) {\r\n        def service = matcher[0][1]\r\n        def svc_desc = matcher[0][5]\r\n        // Match and exclude services from the regex properties\r\n        if (service ==~ /${services_regex}/ && !(service ==~ /${services_exclude_regex}/)) {\r\n            println \"${service}##${service}##${svc_desc}\";\r\n        }\r\n    }\r\n}       \r\n\r\n// Helper function for SSH connection and command passing\r\ndef getCommandOutput(String input_command) {\r\n    try {\r\n        // instantiate JSCH object.\r\n        jsch = new JSch()\r\n\r\n        // do we have an user and no pass ?\r\n        if (user && !pass) {\r\n            // Yes, so lets try connecting via cert.\r\n            jsch.addIdentity(cert)\r\n        }\r\n\r\n        // create session.\r\n        session = jsch.getSession(user, host, port)\r\n\r\n        // given we are running non-interactively, we will automatically accept new host keys.\r\n        session.setConfig(\"StrictHostKeyChecking\", \"no\");\r\n        String authMethod = Settings.getSetting(Settings.SSH_PREFEREDAUTHENTICATION, Settings.DEFAULT_SSH_PREFEREDAUTHENTICATION);\r\n        session.setConfig(\"PreferredAuthentications\", authMethod);\r\n\r\n        // set session timeout, in milliseconds.\r\n        session.setTimeout(timeout)\r\n\r\n        // is host configured with a user & password?\r\n        if (pass) {\r\n            // set password.\r\n            session.setPassword(pass);\r\n        }\r\n\r\n        // connect\r\n        session.connect()\r\n\r\n        // execute command.\r\n        channel = session.openChannel(\"exec\")\r\n        channel.setCommand(input_command)\r\n\r\n        // collect command output.\r\n        def commandOutput = channel.getInputStream()\r\n        channel.connect()\r\n\r\n        def output = commandOutput.text;\r\n\r\n        // disconnect\r\n        channel.disconnect()\r\n\r\n        return output\r\n    }\r\n    // ensure we disconnect the session.\r\n    finally {\r\n        session.disconnect()\r\n    }\r\n}\r\n"
+    },
+    "discoveryInterval": "1440m",
+    "enabled": true
+  },
+  "collectionAttrs": {
+    "type": "groovy",
+    "content": "/*******************************************************************************\n *  © 2007-2022 - LogicMonitor, Inc. All rights reserved.\n ******************************************************************************/\n\nimport com.jcraft.jsch.JSch\nimport com.santaba.agent.util.Settings\n\nhost = hostProps.get(\"system.hostname\")\nuser = hostProps.get(\"ssh.user\")\npass = hostProps.get(\"ssh.pass\")\nport = hostProps.get(\"ssh.port\")?.toInteger() ?: 22\ncert = hostProps.get(\"ssh.cert\") ?: '~/.ssh/id_rsa'\ntimeout = 15000 // timeout in milliseconds\n\ndef azureHost = hostProps.get(\"system.azure.privateIpAddress\")\nif (azureHost && hostProps.get(\"auto.network.resolves\") == \"false\") host = azureHost\n\n// Expected pattern of output lines with data\ndef line_pattern = ~/^\\/?\\s*(\\S+)\\s+(\\w*loaded|not-found|masked\\w*)\\s+(\\w*active|inactive|failed\\w*)\\s+(\\S+)\\s+(.*)$/\n\n// Run command to show any unit that systemd loaded or attempted to load, regardless of its current state on the system.\ndef command = 'systemctl list-units --all --type=service --plain'\ndef command_output = getCommandOutput(command)\n\n// Establish load, active, and sub values for unloaded services not listed\ndef load   = 4\ndef active = 4\ndef sub    = 4\n\ncommand_output.eachLine { line ->\n    def matcher = line_pattern.matcher(line) ?: [:]\n    // Process lines that contain a match\n    if (matcher.size() > 0) {\n        def wildvalue = matcher[0][1]\n        load          = matcher[0][2]\n        active        = matcher[0][3]\n        sub           = matcher[0][4]\n\n        // Modify load responses to integer values\n        if (load.contains(\"loaded\")) {\n            load = 0\n        }\n        else if (load.contains(\"masked\")) {\n            load = 1\n        }\n        else if (load.contains(\"not-found\")) {\n            load = 2\n        }\n\n        // Modify active responses to integer values\n        // Check for inactive first as inactive contains the word active\n        if (active.contains(\"inactive\")) {\n            active = 1\n        }\n        else if (active.contains(\"active\")) {\n            active = 0\n        }\n        else if (active.contains(\"failed\")) {\n            active = 2\n        }\n\n        // Modify sub responses to integer values\n        if (sub.contains(\"running\")) {\n            sub = 0\n        }\n        else if (sub.contains(\"exited\")) {\n            sub = 1\n        }\n        else if (sub.contains(\"failed\")) {\n            sub = 2\n        }\n        else if (sub.contains(\"dead\")) {\n            sub = 3\n        }\n\n        println \"${wildvalue}.load=${load}\"\n        println \"${wildvalue}.active=${active}\"\n        println \"${wildvalue}.sub=${sub}\"\n    }\n}\nreturn 0\n\n\n// Helper function for SSH connection and command passing\ndef getCommandOutput(String input_command) {\n    try {\n        // instantiate JSCH object.\n        jsch = new JSch()\n\n        // do we have an user and no pass ?\n        if (user && !pass) {\n            // Yes, so lets try connecting via cert.\n            jsch.addIdentity(cert)\n        }\n\n        // create session.\n        session = jsch.getSession(user, host, port)\n\n        // given we are running non-interactively, we will automatically accept new host keys.\n        session.setConfig(\"StrictHostKeyChecking\", \"no\");\n        String authMethod = Settings.getSetting(Settings.SSH_PREFEREDAUTHENTICATION, Settings.DEFAULT_SSH_PREFEREDAUTHENTICATION);\n        session.setConfig(\"PreferredAuthentications\", authMethod);\n\n        // set session timeout, in milliseconds.\n        session.setTimeout(timeout)\n\n        // is host configured with a user & password?\n        if (pass) {\n            // set password.\n            session.setPassword(pass);\n        }\n\n        // connect\n        session.connect()\n\n        // execute command.\n        channel = session.openChannel(\"exec\")\n        channel.setCommand(input_command)\n\n        // collect command output.\n        def commandOutput = channel.getInputStream()\n        channel.connect()\n\n        def output = commandOutput.text;\n\n        // disconnect\n        channel.disconnect()\n\n        return output\n    }\n    // ensure we disconnect the session.\n    finally {\n        session.disconnect()\n    }\n}"
+  },
+  "type": 0,
+  "technicalNotes": "Refer to the support article below for instructions on adding monitored instances directly on the resource.  To monitor a list of services automatically, use a comma-separated list in the host property linux.ssh.services, enable Active Discovery, and add the script provided in the support article.\n\n- Support: https://www.logicmonitor.com/support/monitoring/os-virtualization/linux-via-ssh-monitoring",
+  "useWildValueAsUniqueIdentifier": false,
+  "version": 1726156468,
+  "registryMetadata": {
+    "currentUuid": "h-01GlbUTyOsFW1HKR370A",
+    "originalUuid": "h-01GlbUTyOsFW1HKR370A",
+    "locatorId": "",
+    "authorCompanyUuid": "1585a0a9-1289-4dc4-964b-cf3458aef8da",
+    "registryVersion": "1.1.0",
+    "checksum": "259ff89534f8eb2a06c6661e2a4dcdd3",
+    "namespace": "",
+    "registryId": ""
+  },
+  "multiInstance": true,
+  "graphs": [
+    {
+      "datapoints": [
+        {
+          "datapointName": "ActivationState",
+          "consolidationFn": "average",
+          "name": "ActivationState"
+        }
+      ],
+      "min": -1,
+      "timeScale": "1day",
+      "max": 5,
+      "name": "Activation State",
+      "verticalLabel": "status code",
+      "displayPriority": 1,
+      "scale1024": false,
+      "title": "Activation State",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "ActivationState",
+          "color": "silver",
+          "legend": "0=active, 1=inactive, 2=failed, 4=not loaded",
+          "isVirtual": false,
+          "type": "area"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "LoadState",
+          "consolidationFn": "average",
+          "name": "LoadState"
+        }
+      ],
+      "min": -1,
+      "timeScale": "1day",
+      "max": 2,
+      "name": "Load State",
+      "verticalLabel": "status code",
+      "displayPriority": 3,
+      "scale1024": false,
+      "title": "Load State",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "LoadState",
+          "color": "silver",
+          "legend": "0=loaded, 1=not loaded",
+          "isVirtual": false,
+          "type": "area"
+        }
+      ]
+    },
+    {
+      "datapoints": [
+        {
+          "datapointName": "SubState",
+          "consolidationFn": "average",
+          "name": "SubState"
+        }
+      ],
+      "min": -1,
+      "timeScale": "1day",
+      "max": 5,
+      "name": "Sub State",
+      "verticalLabel": "status code",
+      "displayPriority": 2,
+      "scale1024": false,
+      "title": "Sub State",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "SubState",
+          "color": "silver",
+          "legend": "0=running, 1=exited, 2=failed, 3=dead, 4=not loaded",
+          "isVirtual": false,
+          "type": "area"
+        }
+      ]
+    }
+  ],
+  "integrationMetadata": {
+    "publishedAtMS": 1726156494131,
+    "authorCompanyUuid": "1585a0a9-1289-4dc4-964b-cf3458aef8da",
+    "namespace": "switch",
+    "registryVersion": "1.1.0",
+    "name": "",
+    "checksum": "259ff89534f8eb2a06c6661e2a4dcdd3",
+    "registryId": "39820bdf-0dcf-418c-a706-30069cc0b7a9",
+    "isPrivate": false,
+    "locator": "KACWM6",
+    "lineageId": "h-01GlbUTyOsFW1HKR370A",
+    "status": "SECURITY_REVIEW"
+  },
+  "name": "Switch_Linux_SSH_ServiceStatus",
+  "collectionInterval": "5m",
+  "dataSourceType": 1,
+  "group": "",
+  "overviewGraphs": [
+    {
+      "datapoints": [
+        {
+          "datapointName": "ActivationState",
+          "aggregateMethod": "average",
+          "consolidationFn": "average",
+          "name": "ActivationState"
+        }
+      ],
+      "min": -1,
+      "timeScale": "1day",
+      "max": 5,
+      "name": "Top 10 Services by Activation State",
+      "verticalLabel": "status code",
+      "displayPriority": 1,
+      "aggregated": false,
+      "scale1024": false,
+      "title": "Top 10 Services by Activation State",
+      "rigid": false,
+      "lines": [
+        {
+          "datapointName": "ActivationState",
+          "color": "silver",
+          "legend": "##INSTANCE## 0=active, 1=inactive, 2=failed, 4=not loaded",
+          "isVirtual": false,
+          "type": "line"
+        }
+      ]
+    }
+  ],
+  "headers": {
+    "cache-control": "no-cache, no-store",
+    "content-disposition": "attachment; filename=\"Switch_Linux_SSH_ServiceStatus.json\"",
+    "content-encoding": "gzip",
+    "content-type": "application/json",
+    "date": "Thu, 12 Sep 2024 15:55:54 GMT",
+    "server": "LM",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "vary": "accept-encoding",
+    "x-content-type-options": "nosniff",
+    "x-server-version": "209-7"
+  }
+}

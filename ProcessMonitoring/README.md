@@ -13,6 +13,9 @@ The DataSources work without having to manually specify the processes/services o
 3. For [Linux_SSH_Processes_Select](Linux_SSH_Processes_Select/Linux_SSH_Processes_Select.xml):
   * Linux_SSH_Processes_Select.includeRegEx
   * Linux_SSH_Processes_Select.excludeRegEx
+4. For [Linux_SSH_Systemd_Services_Select](Linux_SSH_Systemd_Services_Select/Linux_SSH_Systemd_Services_Select.json):
+  * Linux_SSH_Systemd_Services_Select.includeRegEx
+  * Linux_SSH_Systemd_Services_Select.excludeRegEx
 
 These properties are referenced in the discovery filters of each datasource. You would need to set these properties on each device you want these datasources to apply to. I recommend setting them as properties on a group containing the servers (/Devices by Type/Linux Servers or /Devices by Type/Windows Servers for example). In my portal, since I want all servers to have the same filters, I just set these properties on the root folder so they are inherited by all devices. The ones that don't need the property won't use them.
 
